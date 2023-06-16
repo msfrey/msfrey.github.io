@@ -11,6 +11,7 @@ subtitle: Or, code which does not follow best practices.
 <ul>
 <li><a href="#org67c5d58">1.1. What is bad code?</a></li>
 <li><a href="#org0895985">1.2. What it's not</a></li>
+<li><a href="#org7af4455">1.3. What I think today</a></li>
 </ul>
 </li>
 </ul>
@@ -20,19 +21,23 @@ subtitle: Or, code which does not follow best practices.
 <h2 id="org03932e6"><span class="section-number-2">1.</span> Bad Code</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-For the first 5 years of my career, I made a living publishing bad code. At the time, I was a database applications developer working for a university. But guess what? It didn't matter. Bad code (<a href="https://en.wikipedia.org/wiki/Real-time_computing">except in certain domains</a>) does not kill people. Nobody lost their job, or any money, or their life, as a result of my bad code. Instead, I was promoted several times, earned a masters degree ("this guy can code!"), and was hired by a Fortune 100 company.
+For the first 5 years of my career, I was a database applications developer working for the University of Denver. I made my living writing bad code. But guess what? It didn't matter. Bad code (<a href="https://en.wikipedia.org/wiki/Real-time_computing">except in certain domains</a>) does not kill people. Nobody lost their job, or any money, or their life, as a result of my bad code. Instead, I was promoted several times, earned a masters degree ("this guy can code!"), and was hired by a Fortune 100 company. And that is because I delivered code that met its requirements and worked.
 </p>
 
 <p>
-I would not receive feedback on a line of code I wrote for the first 5 years of my career. At the university, I owned all of my project &#x2013; implementing business process improvements for our ERP system &#x2013; from end to end. There were 5 other engineers on my team, and 2 senior engineers, who never looked at a single line of code I wrote. One sage engineer told me, "it is convenient to break your code into separate functions." In a meeting at my new Fortune 100 job, I discretely Googled "What's a unit test?". I recall nodding knowingly at the screen: this would have been helpful a few years ago.
+There were 2 senior engineers on my team, who in 5 years never once looked at a single line of code I wrote. One sage engineer told me in year 2 or 3, "it is convenient to break your code into separate functions." He was right. Nobody ever mentioned "unit testing" to me &#x2013; either worked, or it didn't<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>.
 </p>
 
 <p>
-The fact is, my code worked. And if your code works, it's good-enough code. Plenty of my bad, working code is still in production today, serving critical financial functions of the university. Accountants are currently using my bad code to post transactions into the universities operating ledger (an enhancement I was lauded for, and which failed in Prod only 1 time). HR teams are using my bad code to transmit HR data to their health care providers. My terrible code enabled the university to track and coordinate quarantines and lockdowns during the Covid-19 pandemic.
+I'm sure plenty of my bad, working code is still in production today, serving critical functions for the university. Accountants are currently using my bad code to post transactions into the universities operating ledger (an enhancement I was lauded for, and which failed in Production only 1 time). HR teams are using my bad code to transmit HR data to their health care providers. My terrible code enabled the university to track and coordinate quarantines and lockdowns during the Covid-19 pandemic.
 </p>
 
 <p>
-Do you know what does matter? Understanding the requirements and delivering them. What mattered was that I took ownership of these projects, understood my customers needs, and produced software assets that consistently worked. I was a one-man-band: business analyst, project manager, and engineer.
+As it turns out, this bad code didn't really matter. Computers have a nifty way of executing correctly written code extremely consistently.
+</p>
+
+<p>
+Do you know what does matter? Understanding the requirements and delivering them. What mattered was that I took ownership of these projects, understood my customers needs, and produced software assets that worked. I was a one-man-band: business analyst, project manager, and engineer. I learned things that today remain the most important parts of who I am as an engineer<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a></sup>.
 </p>
 </div>
 
@@ -40,7 +45,7 @@ Do you know what does matter? Understanding the requirements and delivering them
 <h3 id="org67c5d58"><span class="section-number-3">1.1.</span> What is bad code?</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
-Bad code is code that doesn't work. Given an input, bad code is that fails. It's code that gets the answer wrong. It's also code that fails to meet its requirements.
+Bad code is code that fails to meet it's requirements. Bad code is code that doesn't work. Given an input, bad code is code that fails.
 </p>
 </div>
 </div>
@@ -49,7 +54,11 @@ Bad code is code that doesn't work. Given an input, bad code is that fails. It's
 <h3 id="org0895985"><span class="section-number-3">1.2.</span> What it's not</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
-Bad code is bad only <i>in context</i>. At the university of denver I wrote a lot of projects I dubbed "1 Giant SQL File". The nightly process that transmits data to all of the benefits providers is one .sql file, and one .shl script. They do not live in a github repo, they don't even exist in the same folder. The shell script is executed via cron, on Thursday mornings. There are no unit tests. Over the years, I refactored it a couple of times to make it more flexible, and to implement some tricks I learned with temporary tables. When I was finished, I told the dba, who copied the file from the dev server to the production server.
+Bad code is not code which lives in one big file. It's not code that favors for-loops over list-comprehensions<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup>. Bad code is only bad <i>in context</i>.
+</p>
+
+<p>
+At the University of Denver I wrote a lot of projects I dubbed "1 Giant SQL File". These were projects &#x2013; mission-critical pieces of the University's financial data needs &#x2013; implemented in one giant file which exist on the proudction server. The nightly process that transmits data to all of the benefits providers, enabling employees to have their Doctor's visits covered by insurance, is one .sql file, and one .shl script. They do not live in a github repo. They don't even exist in the same folder. The shell script is executed via cron on Thursday mornings. There are no unit tests. Over the years, I refactored it a couple of times to make it more flexible, and to implement some tricks I learned with temporary tables. When I was finished, I told the dba, who copied the file from the dev server to the production server (more about CI/CD and Automated Delivery pipelines here<sup><a id="fnr.4" class="footref" href="#fn.4" role="doc-backlink">4</a></sup>).
 </p>
 
 <p>
@@ -57,8 +66,48 @@ I'm here to tell you that that is not bad code. It's being used today, and I gua
 </p>
 
 <p>
-Unfortunately, if I wrote a project today in one giant file, I would be laughed out of my cushy Fortune 100 job, and so I must critique the aforementioned process. Because despite working, it's a tower built of tooth-picks and gumon the verge of collapse. The code I write today, faces far more stringent requirements.
+Unfortunately, if I wrote a project today in one giant file, I would be laughed out of my cushy Fortune 100 job, and so I must critique the aforementioned process. Because despite working, it's a tower built of tooth-picks and gum on the verge of collapse. The code I write today, faces far more stringent requirements. And so for me, and the purposes of these blogs, it's about defining what are my boundaries? What my requirements for me to look at code, and accept it into a codebase I own?
 </p>
 </div>
+</div>
+
+<div id="outline-container-org7af4455" class="outline-3">
+<h3 id="org7af4455"><span class="section-number-3">1.3.</span> What I think today</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+In year 6 of my career, now at a Fortune 100 company, the game changed. I began receiving regular code reviews. While being chastised by a Lead Engineer for a Pull-request I'd posted, I discretely Googled "What's a unit test?". I recall nodding knowingly at the screen: this would have been helpful a few years ago.
+</p>
+
+<p>
+The funny thing is, this is all learnable, and it's all relatively easy. I picked up the tricks of the Good Code game in about a year, and was again promoted. How did I manage to get promoted? Because I delivered code which met its requirements and worked.
+</p>
+
+<p>
+At the end of year 7, I am now writing this blog to capture everything I've learned along the way.
+</p>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+As a funny aside, one time, the checks printed by the University started bouncing because the <a href="https://en.wikipedia.org/wiki/Magnetic_ink_character_recognition">MICR Code</a> at the bottom became misaligned. The development lifecycle in this case entailed updating the offsets in some archaic Oracle Pl/SQL Check-printing library, printing a check on computer paper, scanning it, and sending it to a bank. The bank would tell us if the check was deemed valid or not. After several iterations, we received the all-clear on computer paper. To call this project done, we printed a real check and mailed it to the bank for validation. It was a real "Catch Me If You Can" moment when the checks I'd counterfitted (I mean, fixed) started working. These are the sorts of things with plague payroll departments in Universities.
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2" role="doc-backlink">2</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+TODO: Write this blog post.
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3" role="doc-backlink">3</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+TODO: Write this blog post.
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4" role="doc-backlink">4</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+TODO: Write this blog post.
+</p></div></div>
+
+
 </div>
 </div>
