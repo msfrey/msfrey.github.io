@@ -1,15 +1,16 @@
-#+STARTUP: showall indent
-#+STARTUP: hidestars
-#+BEING_EXPORT html
 ---
 layout: default
 title: Magit Tips
+subtitle: Tips and tricks for troubleshooting magit, a spacemacs git porcelain
 ---
-#+END_EXPORT
 * Magit Tips
 ** Creating Branches
 An extremely annoying error while learning magit branch workflows is the following:
+
+#+ATTR_HTML: :textarea t :width 40
+#+BEGIN_EXAMPLE
 Not a valid starting-point: <my_branch>
+#+END_EXAMPLE
 
 Where does this come from, and how do we resolve it? 
 
