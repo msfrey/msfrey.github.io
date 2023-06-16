@@ -1,0 +1,64 @@
+---
+layout: default
+title: Bad Code 
+subtitle: Or, code which does not follow best practices.
+---
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org03932e6">1. Bad Code</a>
+<ul>
+<li><a href="#org67c5d58">1.1. What is bad code?</a></li>
+<li><a href="#org0895985">1.2. What it's not</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org03932e6" class="outline-2">
+<h2 id="org03932e6"><span class="section-number-2">1.</span> Bad Code</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+For the first 5 years of my career, I made a living publishing bad code. At the time, I was a database applications developer working for a university. But guess what? It didn't matter. Bad code (<a href="https://en.wikipedia.org/wiki/Real-time_computing">except in certain domains</a>) does not kill people. Nobody lost their job, or any money, or their life, as a result of my bad code. Instead, I was promoted several times, earned a masters degree ("this guy can code!"), and was hired by a Fortune 100 company.
+</p>
+
+<p>
+I would not receive feedback on a line of code I wrote for the first 5 years of my career. At the university, I owned all of my project &#x2013; implementing business process improvements for our ERP system &#x2013; from end to end. There were 5 other engineers on my team, and 2 senior engineers, who never looked at a single line of code I wrote. One sage engineer told me, "it is convenient to break your code into separate functions." In a meeting at my new Fortune 100 job, I discretely Googled "What's a unit test?". I recall nodding knowingly at the screen: this would have been helpful a few years ago.
+</p>
+
+<p>
+The fact is, my code worked. And if your code works, it's good-enough code. Plenty of my bad, working code is still in production today, serving critical financial functions of the university. Accountants are currently using my bad code to post transactions into the universities operating ledger (an enhancement I was lauded for, and which failed in Prod only 1 time). HR teams are using my bad code to transmit HR data to their health care providers. My terrible code enabled the university to track and coordinate quarantines and lockdowns during the Covid-19 pandemic.
+</p>
+
+<p>
+Do you know what does matter? Understanding the requirements and delivering them. What mattered was that I took ownership of these projects, understood my customers needs, and produced software assets that consistently worked. I was a one-man-band: business analyst, project manager, and engineer.
+</p>
+</div>
+
+<div id="outline-container-org67c5d58" class="outline-3">
+<h3 id="org67c5d58"><span class="section-number-3">1.1.</span> What is bad code?</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Bad code is code that doesn't work. Given an input, bad code is that fails. It's code that gets the answer wrong. It's also code that fails to meet its requirements.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0895985" class="outline-3">
+<h3 id="org0895985"><span class="section-number-3">1.2.</span> What it's not</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Bad code is bad only <i>in context</i>. At the university of denver I wrote a lot of projects I dubbed "1 Giant SQL File". The nightly process that transmits data to all of the benefits providers is one .sql file, and one .shl script. They do not live in a github repo, they don't even exist in the same folder. The shell script is executed via cron, on Thursday mornings. There are no unit tests. Over the years, I refactored it a couple of times to make it more flexible, and to implement some tricks I learned with temporary tables. When I was finished, I told the dba, who copied the file from the dev server to the production server.
+</p>
+
+<p>
+I'm here to tell you that that is not bad code. It's being used today, and I guarantee it has never failed. It works dutifully, like all members of the university community who have long over stayed their welcome. That is code which met all of the requirements.
+</p>
+
+<p>
+Unfortunately, if I wrote a project today in one giant file, I would be laughed out of my cushy Fortune 100 job, and so I must critique the aforementioned process. Because despite working, it's a tower built of tooth-picks and gumon the verge of collapse. The code I write today, faces far more stringent requirements.
+</p>
+</div>
+</div>
+</div>
