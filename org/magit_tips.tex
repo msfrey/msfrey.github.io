@@ -1,0 +1,67 @@
+% Created 2023-06-16 Fri 13:19
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{scrlttr2}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\setkomavar{fromname}{Max Frey}
+\setkomavar{fromemail}{maxfrey@Maxs-Mac-mini.local}
+\KOMAoption{fromemail}{false}
+\KOMAoption{fromphone}{false}
+\KOMAoption{fromurl}{false}
+\KOMAoption{fromlogo}{false}
+\KOMAoption{backaddress}{false}
+\setkomavar{place}{}
+\KOMAoptions{foldmarks=true}
+\LoadLetterOption{NF}
+\date{\today}
+\hypersetup{
+ pdfauthor={Max Frey},
+ pdftitle={},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 28.2 (Org mode 9.6.6)}, 
+ pdflang={English}}
+\begin{document}
+
+\begin{letter}{%
+\mbox{}}
+
+\opening{Magit Tips}
+
+\#+BEING\textsubscript{EXPORT} html
+---
+layout: default
+title: Magit Tips
+---
+\#+END\textsubscript{EXPORT}
+An extremely annoying error while learning magit branch workflows is the following:
+Not a valid starting-point: <my\textsubscript{branch}>
+
+Where does this come from, and how do we resolve it? 
+
+Recall that to check out a branch from magit, after navigating to the magit-status page, we press b n
+
+Then, magit will ask you for your starting place. This is actually very helpful - we frequently want to create a branch not from master, but from some other existing branch. But here in lies the issue. It's asking for the starting place. 
+
+Be careful: magit is NOT asking you to name your new branch yet. If you choose a branch that does not exist, you will see the following:
+
+Not a valid starting-point: my-new-branch
+
+\ldots{} so -- choose a branch that exists! THEN magit will ask you to create your branch.
+\closing{}
+
+
+
+
+\end{letter}
+
+\end{document}

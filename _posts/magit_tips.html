@@ -1,0 +1,58 @@
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org1cae6bb">1. Magit Tips</a>
+<ul>
+<li><a href="#org99312cc">1.1. Creating Branches</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<p>
+#+BEING<sub>EXPORT</sub> html
+&#x2014;
+layout: default
+title: Magit Tips
+&#x2014;
+#+END<sub>EXPORT</sub>
+</p>
+<div id="outline-container-org1cae6bb" class="outline-2">
+<h2 id="org1cae6bb"><span class="section-number-2">1.</span> Magit Tips</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org99312cc" class="outline-3">
+<h3 id="org99312cc"><span class="section-number-3">1.1.</span> Creating Branches</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+An extremely annoying error while learning magit branch workflows is the following:
+Not a valid starting-point: &lt;my<sub>branch</sub>&gt;
+</p>
+
+<p>
+Where does this come from, and how do we resolve it? 
+</p>
+
+<p>
+Recall that to check out a branch from magit, after navigating to the magit-status page, we press b n
+</p>
+
+<p>
+Then, magit will ask you for your starting place. This is actually very helpful - we frequently want to create a branch not from master, but from some other existing branch. But here in lies the issue. It's asking for the starting place. 
+</p>
+
+<p>
+Be careful: magit is NOT asking you to name your new branch yet. If you choose a branch that does not exist, you will see the following:
+</p>
+
+<p>
+Not a valid starting-point: my-new-branch
+</p>
+
+<p>
+&#x2026; so &#x2013; choose a branch that exists! THEN magit will ask you to create your branch.
+</p>
+</div>
+</div>
+</div>
