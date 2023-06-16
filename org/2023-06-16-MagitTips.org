@@ -6,6 +6,8 @@ title: Magit Tips
 subtitle: Tips and tricks for troubleshooting magit, a spacemacs git porcelain
 ---
 #+END_EXPORT
+#+TOC: listings
+#+TOC: tables
 * Magit Tips
 ** Creating Branches
 An extremely annoying error while learning magit branch workflows is the following:
@@ -20,4 +22,4 @@ Recall that to check out a branch from magit, after navigating to the magit-stat
 
 Then, magit will ask you for your starting place. Be careful: magit is NOT asking you to name your new branch yet. This is actually very helpful - we frequently want to create a branch not from master, but from some other existing branch. But here in lies the issue. It's asking for the starting place. 
 
-... so -- choose a branch that exists! THEN magit will ask you to create your branch.
+So -- choose a branch that exists! THEN magit will ask you to name your new branch.
