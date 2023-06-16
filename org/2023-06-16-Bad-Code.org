@@ -37,11 +37,11 @@ The funny thing is, this is all learnable, and it's all relatively straight-forw
 
 At the end of year 7, I am now writing this blog to capture everything I've learned along the way. These are the things I would tell a Jr Engineer -- so if you think I'm wrong, reach out! 'Cause I'm training an army with these philosophies.
 
-[fn:1] As a funny aside, one time, the checks printed by the University started bouncing because the [[https://en.wikipedia.org/wiki/Magnetic_ink_character_recognition][MICR Code]] at the bottom became misaligned. The development lifecycle in this case entailed updating the offsets in some archaic Oracle Pl/SQL Check-printing library, printing a check on computer paper, scanning it, and sending it to a bank. The bank would tell us if the check was deemed valid or not. After several iterations, we received the all-clear on computer paper. To call this project done, we printed a real check and mailed it to the bank for validation. It was a real "Catch Me If You Can" moment when the checks I'd counterfitted (I mean, fixed) started working. These are the sorts of things with plague payroll departments in Universities.
+[fn:1]One time, the checks printed by the University started bouncing because the [[https://en.wikipedia.org/wiki/Magnetic_ink_character_recognition][MICR Code]] at the bottom became misaligned. The development lifecycle in this case entailed updating the offsets in some archaic Oracle Pl/SQL Check-printing library, printing a check on computer paper, scanning it, and sending it to a bank. The bank would tell us if the check was deemed valid or not. After several iterations, we received the all-clear on computer paper. To call this project done, we printed a real check and mailed it to the bank for validation. It was a real "Catch Me If You Can" moment when the checks I'd counterfitted (I mean, fixed) started working. These are the sorts of things with plague payroll departments in Universities.
 
-[fn:2] TODO: Write this blog post.
+[fn:2]TODO: Write this blog post.
 
-[fn:3] TODO: Write this blog post.
+[fn:3]TODO: Write this blog post.
 
-[fn:4] TODO: Write this blog post.
+[fn:4]TODO: Write this blog post.
 
