@@ -7,3 +7,10 @@ subtitle:
 ---
 #+END_EXPORT
 #+TOC: headlines 2
+
+Write your post here! Remember to save the post as "YYYY-MM-DD-title.html".
+
+To save and publish:
+
+Export with C-c C-e P X Max
+Then commit those changes with (s)tage (c)ommit, (c)ommit, write your message, ~, ,~
