@@ -3,18 +3,6 @@ layout: default
 title: Magit Tips
 subtitle: Tips and tricks for troubleshooting magit, a spacemacs git porcelain
 ---
-<div id="table-of-contents" role="doc-toc">
-    <h2>Table of Contents</h2>
-    <div id="text-table-of-contents" role="doc-toc">
-        <ul>
-            <li><a href="#org9b621c7">1. Magit Tips</a>
-                <ul>
-                    <li><a href="#org4104e29">1.1. Creating Branches</a></li>
-                </ul>
-            </li>
-        </ul>
-    </div>
-</div>
 <div id="outline-container-org9b621c7" class="outline-2">
 <h2 id="org9b621c7"><span class="section-number-2">1.</span> Magit Tips</h2>
 <div class="outline-text-2" id="text-1">
@@ -35,19 +23,11 @@ Where does this come from, and how do we resolve it?
 </p>
 
 <p>
-Recall that to check out a branch from magit, after navigating to the magit-status page, we press b n
+Recall that to check out a branch from magit, after navigating to the magit-status page, we press <code>b n</code>
 </p>
 
 <p>
-Then, magit will ask you for your starting place. This is actually very helpful - we frequently want to create a branch not from master, but from some other existing branch. But here in lies the issue. It's asking for the starting place. 
-</p>
-
-<p>
-Be careful: magit is NOT asking you to name your new branch yet. If you choose a branch that does not exist, you will see the following:
-</p>
-
-<p>
-Not a valid starting-point: my-new-branch
+Then, magit will ask you for your starting place. Be careful: magit is NOT asking you to name your new branch yet. This is actually very helpful - we frequently want to create a branch not from master, but from some other existing branch. But here in lies the issue. It's asking for the starting place. 
 </p>
 
 <p>
