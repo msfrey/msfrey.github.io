@@ -6,6 +6,8 @@ title: Magit Tips
 subtitle: Tips and tricks for troubleshooting magit, a spacemacs git porcelain
 ---
 #+END_EXPORT
+#+TOC: headlines 2
+
 * Magit Tips
 ** Creating Branches
 An extremely annoying error while learning magit branch workflows is the following:
