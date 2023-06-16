@@ -16,7 +16,7 @@ I'm sure plenty of my bad, working code is still in production today, serving cr
 
 As it turns out, this bad code didn't really matter. Computers have a nifty way of executing correctly written code extremely consistently.
 
-Do you know what does matter? Understanding the requirements and delivering them. What mattered was that I took ownership of these projects, understood my customers needs, and produced software assets that worked. I was a one-man-band: business analyst, project manager, and engineer. I learned things that today remain the most important parts of who I am as an engineer[fn:2].
+Do you know what does matter? Understanding the requirements and delivering them. What mattered was that I took ownership of these projects, understood my customers needs, and produced software assets that worked. I was a one-man-band: business analyst, project manager, and engineer. I learned many valuable lessons that today remain the most important parts of who I am as an engineer[fn:2], but I did not learn to write robust code at the University of Denver. That would come later.
 
 ** What is bad code?
 Bad code is code that fails to meet it's requirements. Bad code is code that doesn't work. Given an input, bad code is code that fails.
