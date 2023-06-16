@@ -1,0 +1,1 @@
+ While being chastised by a Lead Engineer for a Pull-request I'd posted, I discretely Googled "What's a unit test?". I recall nodding knowingly at the screen: this would have been helpful a few years ago.
