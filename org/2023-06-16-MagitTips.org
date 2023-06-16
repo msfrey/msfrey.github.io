@@ -12,7 +12,7 @@ An extremely annoying error while learning magit branch workflows is the followi
 Not a valid starting-point: <my_branch>
 #+END_EXAMPLE
 
-Where does this come from, and how do we resolve it? 
+Where does this come from, and how do we resolve it?
 
 Recall that to check out a branch from magit, after navigating to the magit-status page, we press b n
 
