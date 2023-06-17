@@ -1,0 +1,240 @@
+---
+layout: default
+title: Introduction to AWS and Serverless Computing - Part 1
+subtitle: How to create an AWS Account, Install the AWS CLI, and Install the AWS SAM CLI
+---
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orga36c01e">1. AWS Introduction</a>
+<ul>
+<li><a href="#org81678e4">1.1. Creating an account</a></li>
+<li><a href="#org7ff18b3">1.2. Creating an IAM user</a></li>
+<li><a href="#org45c8bc4">1.3. Creating an access key ID and secret access key</a></li>
+<li><a href="#org3e511b6">1.4. Install the AWS CLI</a></li>
+<li><a href="#orgacc9bc6">1.5. Use the AWS CLI to configure AWS Credentials</a></li>
+<li><a href="#orga78b55f">1.6. Resources</a></li>
+</ul>
+</li>
+<li><a href="#orgf87566c">2. AWS Lambda</a>
+<ul>
+<li><a href="#org9b9c0f9">2.1. Installing the SAM CLI</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga36c01e" class="outline-2">
+<h2 id="orga36c01e"><span class="section-number-2">1.</span> AWS Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Getting started with AWS is hard. This blog post and tutorial is meant to help new users get their feet wet. It takes a bit of upfront work, clicking buttons that you may not fully understand inititally.
+</p>
+
+<p>
+With about 30 minutes of effort, it's possible to set up developing applications for the cloud. This tutorial is intended to get you there, and then keep you going.
+</p>
+
+<p>
+We'll do this by speed-running account creation, initial administrator set up, and setting the AWS CLI. From there, we'll begin developing an <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> locally. Then, we'll talk about deploying it and executing in the cloud.
+</p>
+
+<p>
+This guide is built around this documentation: <a href="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/prerequisites.html">https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/prerequisites.html</a>
+</p>
+
+<p>
+Frankly, this is the best place to start &#x2013; right from the horses mouth. Treat my guide as merely your enabler. 
+</p>
+</div>
+
+<div id="outline-container-org81678e4" class="outline-3">
+<h3 id="org81678e4"><span class="section-number-3">1.1.</span> Creating an account</h3>
+</div>
+
+<div id="outline-container-org7ff18b3" class="outline-3">
+<h3 id="org7ff18b3"><span class="section-number-3">1.2.</span> Creating an IAM user</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+The user you created your account with is like a business owner. It's the over-arching identity of the organization that owns the account &#x2013; but that's not your IT guy!
+</p>
+
+<p>
+Your primary IT guy is your administrator! They're the ones who do all the work in the console, not the business owner, yuck!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org45c8bc4" class="outline-3">
+<h3 id="org45c8bc4"><span class="section-number-3">1.3.</span> Creating an access key ID and secret access key</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+With your user created, generate a secret acess key intended for use with the AWS CLI. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3e511b6" class="outline-3">
+<h3 id="org3e511b6"><span class="section-number-3">1.4.</span> Install the AWS CLI</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+<a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html</a>
+</p>
+
+<p>
+These instructions are for the command line installer, and assume you have sudo access to your computer.
+</p>
+
+<p>
+First:
+</p>
+<pre class="example">
+curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+</pre>
+
+<p>
+Then:
+</p>
+<pre class="example">
+sudo installer -pkg AWSCLIV2.pkg -target /
+</pre>
+
+<p>
+Outputs:
+</p>
+<pre class="example">
+maxfrey@Maxs-Mac-mini ~ % curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 35.4M  100 35.4M    0     0  2445k      0  0:00:14  0:00:14 --:--:-- 2464k
+maxfrey@Maxs-Mac-mini ~ % sudo installer -pkg ./AWSCLIV2.pkg -target /
+Password:
+installer: Package name is AWS Command Line Interface
+installer: Installing at base path /
+installer: The install was successful.
+</pre>
+
+<p>
+Validating your outputs:
+</p>
+
+<pre class="example">
+which aws
+</pre>
+
+<pre class="example">
+aws --version
+</pre>
+
+<p>
+Outputs (if successful):
+</p>
+<pre class="example">
+maxfrey@Maxs-Mac-mini ~ % which aws
+/usr/local/bin/aws
+maxfrey@Maxs-Mac-mini ~ % aws --version
+aws-cli/2.12.1 Python/3.11.3 Darwin/22.1.0 exe/x86_64 prompt/off
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgacc9bc6" class="outline-3">
+<h3 id="orgacc9bc6"><span class="section-number-3">1.5.</span> Use the AWS CLI to configure AWS Credentials</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+Now, we'll enable our local machines to communicate with the cloud environment, by applying the credentials we created for our IT Adminstrator to our local machine.
+</p>
+
+<pre class="example">
+maxfrey@Maxs-Mac-mini ~ % aws configure
+AWS Access Key ID [None]: &lt;pasted from the key you generated prior&gt;
+AWS Secret Access Key [None]: &lt;pasted from the key you generated prior&gt;
+Default region name [None]: us-east-1
+Default output format [None]: json
+</pre>
+
+<p>
+Now, you're ready to get started with the AWS SAM CLI &#x2013; or any AWS Cloud product for that matter. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga78b55f" class="outline-3">
+<h3 id="orga78b55f"><span class="section-number-3">1.6.</span> Resources</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+<a href="https://docs.aws.amazon.com/accounts/latest/reference/best-practices.html">https://docs.aws.amazon.com/accounts/latest/reference/best-practices.html</a>
+Troubleshooting: <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-troubleshooting.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-troubleshooting.html</a> 
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf87566c" class="outline-2">
+<h2 id="orgf87566c"><span class="section-number-2">2.</span> AWS Lambda</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Getting started with cloud computing is hard. It's really hard. In this business, we call this <code>boiling the ocean</code> or <code>drinking from the firehose</code>. It's a lot. In this guide, we're going to work in small chunks leading up towards deploying cloud resources that can be invoked from the live internet.
+</p>
+
+<p>
+There are not many short cuts we can take to developing cloud applications, but there are ways we can accelerate toward doing the fun stufff &#x2013; building your shiny application &#x2013; while saving complexity for later.
+</p>
+
+<p>
+My recommendation is to start with what you do know: building applications on your local machine. If we can set up our local machine the way Amazon wants us to, we'll be in a great position to iterate quickly and build great software. Plus, no matter where your engineering journey takes you, you'll always have a strong platform to start from. So, let's jump in to building and deploying our first AWS Lambda.
+</p>
+</div>
+
+<div id="outline-container-org9b9c0f9" class="outline-3">
+<h3 id="org9b9c0f9"><span class="section-number-3">2.1.</span> Installing the SAM CLI</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+We're going to start with the SAM CLI so that we can build our lambda locally. Then we'll work on deploying that lambda to the cloud. Once we have something existing in the cloud, we'll talk about invoking it from the internet. Then we'll make that lambda do cool stuff.
+</p>
+
+<p>
+Documentation: <a href="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html">https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html</a>
+</p>
+
+<p>
+I'm following the instructions titled "Command line - All users"
+</p>
+
+<p>
+First I've downloaded the recommended pkg installer, and I moved it to my ~ folder, as shown here:
+</p>
+
+<pre class="example">
+maxfrey@Maxs-Mac-mini ~ % ls -ltr ~/aws-sam-cli-macos-arm64.pkg 
+-rw-r--r--@ 1 maxfrey  staff  44104951 Jun 17 14:40 /Users/maxfrey/aws-sam-cli-macos-arm64.pkg
+</pre>
+
+<p>
+Continuing with the instructions, run the following commands, and validate your installation.
+<code>sudo installer -pkg aws-sam-cli-macos-arm64.pkg -target /</code>
+</p>
+
+<pre class="example">
+maxfrey@Maxs-Mac-mini ~ % sudo installer -pkg aws-sam-cli-macos-arm64.pkg -target /
+installer: Package name is AWS SAM CLI
+installer: Installing at base path /
+installer: The install was successful.
+maxfrey@Maxs-Mac-mini ~ % which sam
+/usr/local/bin/sam
+maxfrey@Maxs-Mac-mini ~ % sam --version
+SAM CLI, version 1.86.1
+</pre>
+
+<p>
+That's it! With the AWS CLI installed, and the AWS SAM CLI installed, you have everything you need to begin developing lambdas.
+</p>
+
+<p>
+Now find yourself a cozy garage to code in, and launch your start-up.
+</p>
+</div>
+</div>
+</div>
