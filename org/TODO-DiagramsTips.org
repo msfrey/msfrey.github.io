@@ -1,0 +1,22 @@
+#+OPTIONS: toc:nil
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Tips for Diagrams
+subtitle: Improving communication with product and engineering teams with diagrams
+---
+#+END_EXPORT
+#+TOC: headlines 2
+* Why diagrams?
+** Visual Learners
+** Non-technical folks
+** Simplified negotiation
+* Common Diagrams
+** Product
+*** Sequence Diagrams
+*** Architecture Diagrams
+** Engineering
+*** Codebase Diagrams / UML
+*** Architectural Diagrams
+* Examples and Resources
+

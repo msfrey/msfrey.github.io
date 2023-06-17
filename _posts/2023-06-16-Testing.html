@@ -15,7 +15,7 @@ subtitle: How to deliver code that works
 <li><a href="#orgc2f0bd2">2.3. Additional powers of abstraction</a></li>
 </ul>
 </li>
-<li><a href="#org890c184">3. User Acceptance Tests</a></li>
+<li><a href="#orgc424bf0">3. Component Testing</a></li>
 <li><a href="#org85a6344">4. Contract Testing</a></li>
 <li><a href="#orgbb89c54">5. Integration Tests</a></li>
 </ul>
@@ -88,7 +88,7 @@ Take for example this code:
         customers_over_50 = <span style="color: #4f97d7;">list</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">filter</span><span style="color: #bc6ec5;">(</span><span style="color: #2d9574;">(</span><span style="color: #4f97d7; font-weight: bold;">lambda</span> customer: customer<span style="color: #67b11d;">[</span><span style="color: #2d9574;">'age'</span><span style="color: #67b11d;">]</span> &gt; <span style="color: #a45bad;">50</span><span style="color: #2d9574;">)</span>, customers<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
 
         <span style="color: #4f97d7; font-weight: bold;">for</span> customer <span style="color: #4f97d7; font-weight: bold;">in</span> customers_over_50:
-            writer.write<span style="color: #4f97d7;">(</span>f<span style="color: #2d9574;">'</span>{customer["name"]}<span style="color: #2d9574;">, </span>{ customer["age"]}<span style="color: #2d9574;">\n'</span><span style="color: #4f97d7;">)</span>
+            writer.write<span style="color: #4f97d7;">(</span>f<span style="color: #2d9574;">'</span>{customer["name"]}<span style="color: #2d9574;">, </span>{customer["age"]}<span style="color: #2d9574;">\n'</span><span style="color: #4f97d7;">)</span>
 
 create_customer_over_50_file<span style="color: #4f97d7;">()</span>
 </pre>
@@ -99,7 +99,7 @@ This code accomplishes a fairly common set of tasks:
 </p>
 <ul class="org-ul">
 <li>Reads data from some data source</li>
-<li>Filters that data based on a business requirement.</li>
+<li>Carries out some business logic (filtering and transforming the data in some necessary way)</li>
 <li>Writes it to an output destination</li>
 </ul>
 
@@ -108,15 +108,15 @@ Regardless of whether or not you're connecting to a database, reading from an AP
 </p>
 
 <p>
-The above is nicely written. Generally, whomever wrote this function could feel pretty confident that it does what they want based on reading it. For many years, I wrote code just like this, and I would test it by manually reading the output data, and calling it done. Customer over 50 report is ready for prod, boss.
+The above code is nicely written. Generally, whomever wrote this function could feel pretty confident that it does what they want based on reading it. For many years, I wrote code just like this, and I would test it by manually reading the output data, and calling it done. "Customer over 50 report is ready for prod, boss".
 </p>
 
 <p>
-But now comes a new requirement: we must achieve over 80% of the lines of code covered by a unit test in order to ship it.
+But how do we <i>really</i> test it? What if to ship we must achieve over 80% of the lines of code covered by a unit test?
 </p>
 
 <p>
-No problem, you think. We could run this function, and then write another function to validate. Job done, with the following code:
+No problem, I'd say. We could run the above function, and then run another function to validate. Job done, with the following code:
 </p>
 
 <div class="org-src-container">
@@ -142,7 +142,7 @@ validate_customer_over_50_file<span style="color: #4f97d7;">()</span>
 </div>
 
 <p>
-In some contexts, I'd see the above and would think&#x2026; just ship it. It's not awful. It has asserts which make sense at least. In my time at the university, this already exceeds any automated test I'd ever written (none).
+In some contexts, I'd see the above and would think&#x2026; ship it. It's not awful. It has asserts which make sense at least. In my time at the university, this already exceeds any automated test I'd ever written (none).
 </p>
 
 <p>
@@ -153,22 +153,20 @@ But alas, at major software engineering organizations, this doesn't really fly.
 Here's where it starts to break down for me:
 </p>
 <ul class="org-ul">
-<li>Separation of Responsibility / Concerns
-It's hard to detect in this short snippet, but recall there's 3 separate operations going on. There's the input, the business logic, and the output. They're all mixed together. Any of the 3 can evolve at any time. There's times when from a computer architecture perspective, we're leaving the main execution, and we're waiting on I/O processes to complete.</li>
-<li>Maintainability
-Requirements change. One day, you're reading data from an in-memory source, but the next you're fetching it from a microservice. One day, it's customers over 50, the next, it's customers between the ages of 25 and 55 in California. One day, you're writing it to a flat file, but the next you're sending it to an API. In some cases, 100% of this code would be re-written.
-<ul class="org-ul">
-<li>Reusability
+<li><b>Separation of Responsibility / Concerns</b>
+It's hard to detect in this short snippet, but recall there's 3 separate operations going on. There's the input, the business logic, and the output. They're all mixed together. Any of the 3 can evolve at any time. And there's times when from a software execution perspective, we're leaving the main execution, and we're waiting on I/O processes to complete. This is frowned upon&#x2026; we're not here to unit test the python standard library.</li>
+<li><b>Maintainability</b>
+Requirements change. One day, you're reading data from an in-memory source, but the next you're fetching it from a microservice. One day, it's customers over 50, the next, it's customers between the ages of 25 and 55 in California. One day, you're writing it to a flat file, but the next you're sending it to an API. In some cases, 100% of this code would need to be re-written.</li>
+<li><b>Reusability</b>
 What if we need a second report. Much of the requirements are the same, but this time we're writing products to a CSV, and filtering by price. In the current design of this code, we would write a second, completely separate but eerily similiar function. And it would need all it's own unit tests.</li>
-</ul></li>
 </ul>
 
 <p>
-You get the idea. It's not bad code, it's just not particularly <i>good</i> code either.
+You get the idea. It's not bad code, it's just not particularly <i>good</i> code either. As far as products go, it's not well designed. It's like having a garlic-press in your kitchen. What it does, it does well. But it only does one thing, and you're gonna store it forever.
 </p>
 
 <p>
-So what do we do? We refactor and abstract. This is where unit tests in some ways begin to drive our codebase architecture. When we develop code with unit tests in mind, the code is better organized, more reusable, and easier to maintain. My first boss at my new company once said, "Programming gets fun when you stop coding and start engineering". My eyes rolled all the way back into my head when he said that, but he was right.
+So what do we do? We abstract and refactor. This is where unit tests dictate our codebase architecture. When we develop code with unit tests in mind, the code is better organized, more reusable, and easier to maintain. My first boss at my new company once said, "Programming gets fun when you stop coding and start engineering". My eyes rolled all the way back into my head when he said that, but he was right. This is the part where engineers <i>design</i> useful products.
 </p>
 </div>
 </div>
@@ -221,12 +219,13 @@ It is like follows:
         <span style="color: #4f97d7; font-weight: bold;">pass</span>
 
     <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">write_file</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span>, file_name, contents<span style="color: #4f97d7;">)</span>:
-        <span style="color: #4f97d7; font-weight: bold;">with</span> <span style="color: #4f97d7;">open</span><span style="color: #4f97d7;">(</span>file_name, <span style="color: #2d9574;">'w'</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> <span style="color: #7590db;">writer</span>:
-            <span style="color: #4f97d7; font-weight: bold;">for</span> line <span style="color: #4f97d7; font-weight: bold;">in</span> contents:
-                writer.write<span style="color: #4f97d7;">(</span>line<span style="color: #4f97d7;">)</span>
+      <span style="color: #2aa1ae; background-color: #292e34;">#  </span><span style="color: #2aa1ae; background-color: #292e34;">An aside... using with "with open(file_name...) ... as " is called a "Context Manager"</span>
+      <span style="color: #4f97d7; font-weight: bold;">with</span> <span style="color: #4f97d7;">open</span><span style="color: #4f97d7;">(</span>file_name, <span style="color: #2d9574;">'w'</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> writer:
+          <span style="color: #4f97d7; font-weight: bold;">for</span> line <span style="color: #4f97d7; font-weight: bold;">in</span> contents:
+              writer.write<span style="color: #4f97d7;">(</span>line + <span style="color: #2d9574;">'\n'</span><span style="color: #4f97d7;">)</span>
 
 <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">main</span><span style="color: #4f97d7;">(</span>customer_repository, customer_service, file_writer<span style="color: #4f97d7;">)</span>:
-    customers = customer_repository.get_customers<span style="color: #4f97d7;">()</span>
+    <span style="color: #7590db;">customers</span> = customer_repository.get_customers<span style="color: #4f97d7;">()</span>
     <span style="color: #7590db;">customers_over_50</span> = customer_service.filter_customers<span style="color: #4f97d7;">(</span>customers<span style="color: #4f97d7;">)</span>
     <span style="color: #7590db;">formatted_customers_over_50</span> = <span style="color: #4f97d7;">[</span>customer_service.get_customer_record_format<span style="color: #bc6ec5;">(</span>customer<span style="color: #bc6ec5;">)</span> <span style="color: #4f97d7; font-weight: bold;">for</span> customer <span style="color: #4f97d7; font-weight: bold;">in</span> customers_over_50<span style="color: #4f97d7;">]</span>
     file_writer.write_file<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/customers_over_50_report.txt"</span>, formatted_customers_over_50<span style="color: #4f97d7;">)</span>
@@ -242,7 +241,7 @@ validate_customer_over_50_file<span style="color: #4f97d7;">()</span>
 </p>
 
 <p>
-This is a lot more code. We've effectively split the original code into its component parts. But each part is now reusable, easier to maintain, and easier to test. Let's take a look at those unit tests:
+This is a lot more code, and it's got added complexity. We have classes now. We've effectively split the original code into its component parts. But each part is now reusable, easier to maintain, and easier to test. Let's take a look at those unit tests:
 </p>
 
 <div class="org-src-container">
@@ -282,26 +281,34 @@ test_customer_service_record_format<span style="color: #4f97d7;">(</span>Custome
 </div>
 
 <p>
-Each component is now tested separately. Each test is simple. The components are isolated. The unit tests test only one function at a time. But you may ask: where is the unit test for the FileWriter?
+The advantages to this code, even there's more complexity, are many. The functions are becoming "pure" functions. They are determinstic &#x2013; they do one thing and they do that one thing every time. Now, lots of teams can even re-use our CustomerRepository. We've put it in a central place, something data organizations strive for, for consistency. Other teams can use our FileWriter, so if we want to publish those products by price, much of the work is already done.
+</p>
+
+
+<p>
+Additionally, each component is now developed and tested separately. But notice that each test is simple. The components are isolated. The unit tests test only one function at a time. On an engineering team, we actually could've parallelized this work. Again imagine that fetching data is cumbersome, deciding the contract is a 3 week ordeal with product, and the business logic is the fun part (but product can't <i>really</i> decide what they want. As tech lead, I can divy up this work. That's powerful for an organization. So powerful there's a <a href="https://en.wikipedia.org/wiki/Conway%27s_law">law about it</a>. 
 </p>
 
 <p>
-Here's the difficulty with the FileWriter. The FileWriter leaves our code. It necessarily engages in some sort of File I/O that takes palce separately from the exceution of our application. In unit tests, we have a rule: we don't leave the function we're testing.
+But you may ask: where is the unit test for the FileWriter?
 </p>
 
 <p>
-To avoid this in unit tests, we use mocks. Mocking can be done in any language, but in python we commonly use <code>unittest.mock</code>. Instead of opening a real file, we'll use <code>mock_open</code> and open a Mock file. Then we'll validate that our code does that correctly, and writes to that mock correctly &#x2013; but we won't actually write a file.
+Here's the difficulty with the FileWriter. The execution of FileWriter leaves our code. It necessarily engages in some sort of File I/O that takes place externally from the exceution of our application. In unit tests, we have a rule: we don't leave the function we're testing.
 </p>
 
 <p>
-Isn't that bad? Not really &#x2013; at that point, it's executing code we didn't write. If an issue is found at that point, we'll open an Issue with the Python language folks. Here's what it looks like:
+To avoid this in unit tests, we use mocks. Mocking can be done in any language, but in python we commonly use <code>unittest.mock</code>. Instead of opening a real file, we'll use <code>mock_open</code> and open a Mock file. Then we'll validate that our code interacts with the mock correctly &#x2013; but we won't actually write a file.
+</p>
+
+<p>
+Isn't that bad? Not really &#x2013; at that point of writing to a file, it's executing code we didn't write. If an issue is found at that point, we'll open an Issue with the Python language folks. Here's what our mocked file<sub>writer</sub> test looks like:
 </p>
 
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #4f97d7; font-weight: bold;">from</span> unittest.mock <span style="color: #4f97d7; font-weight: bold;">import</span> patch, mock_open
 
-<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_file_writer</span><span style="color: #4f97d7;">()</span>:
-    <span style="color: #7590db;">file_writer</span> = FileWriter<span style="color: #4f97d7;">()</span>
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_file_writer</span><span style="color: #4f97d7;">(</span>file_writer<span style="color: #4f97d7;">)</span>:
     <span style="color: #7590db;">open_mock</span> = mock_open<span style="color: #4f97d7;">()</span>
 
     <span style="color: #4f97d7; font-weight: bold;">with</span> patch<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"__main__.open"</span>, open_mock, create=<span style="color: #a45bad;">True</span><span style="color: #4f97d7;">)</span>:
@@ -310,12 +317,115 @@ Isn't that bad? Not really &#x2013; at that point, it's executing code we didn't
     open_mock.assert_called_once_with<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/test.txt"</span>, <span style="color: #2d9574;">"w"</span><span style="color: #4f97d7;">)</span>
     open_mock.return_value.write.assert_called_once_with<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"my-data\n"</span><span style="color: #4f97d7;">)</span>
 
-test_file_writer<span style="color: #4f97d7;">()</span>
+
+test_file_writer<span style="color: #4f97d7;">(</span>FileWriter<span style="color: #bc6ec5;">()</span><span style="color: #4f97d7;">)</span>
+
 </pre>
 </div>
 
 <p>
 In the above unit tests, we are using a mock to patch a function. In this case, we patch the <code>open</code> function with a new variable, <code>open_mock</code>. This tells python, instead of calling <code>open</code> and creating a file, call our <code>open_mock</code> object instead. This is also how we build our asserts, since Python is monitoring the uses of <code>open_mock</code>. We can therefore assert that it's called exactly once, and that we call it with <code>my-data\n</code>, thereby enforcing our contract.
+</p>
+
+<p>
+We can extend this further by testing "side-effects". We can test for the unforeseen circumstances. In the above code, if any exception occurs, the entire process fails. In many cases, that may be ok. And lots of times, for data pipelines, that's what we'd prefer to happen.
+</p>
+
+<p>
+But we may want a more graceful exit for our program. And so, we mock with a side-effect. We tell python, when this function is invoked, raise an exception.
+</p>
+
+<p>
+This is an example of side-effects in action:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #4f97d7; font-weight: bold;">from</span> unittest.mock <span style="color: #4f97d7; font-weight: bold;">import</span> patch, mock_open
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_file_writer_fails</span><span style="color: #4f97d7;">(</span>file_writer<span style="color: #4f97d7;">)</span>:
+    <span style="color: #7590db;">open_mock</span> = mock_open<span style="color: #4f97d7;">()</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">with</span> patch<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"__main__.open"</span>, open_mock, create=<span style="color: #a45bad;">True</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> open_mock:
+        open_mock.side_effect = <span style="color: #ce537a; font-weight: bold;">IOError</span><span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"Something bad happened!"</span><span style="color: #4f97d7;">)</span>
+        file_writer.write_file<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/test.txt"</span>, <span style="color: #bc6ec5;">[</span><span style="color: #2d9574;">"my-data"</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span>
+
+    open_mock.assert_called_once_with<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/test.txt"</span>, <span style="color: #2d9574;">"w"</span><span style="color: #4f97d7;">)</span>
+    open_mock.return_value.write.assert_called_once_with<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"my-data\n"</span><span style="color: #4f97d7;">)</span>
+
+test_file_writer_fails<span style="color: #4f97d7;">(</span>FileWriter<span style="color: #bc6ec5;">()</span><span style="color: #4f97d7;">)</span>
+
+</pre>
+</div>
+
+<p>
+The above unit code, run against the current version of FileWriter, will fail with the following:
+</p>
+
+<pre class="example">
+Traceback (most recent call last):
+  File "/Users/maxfrey/Development/blog/msfrey.github.io/notes/python/untestable.py", line 140, in &lt;module&gt;
+    test_file_writer_fails(FileWriter())
+  File "/Users/maxfrey/Development/blog/msfrey.github.io/notes/python/untestable.py", line 135, in test_file_writer_fails
+    file_writer.write_file("../output/test.txt", ["my-data"])
+  File "/Users/maxfrey/Development/blog/msfrey.github.io/notes/python/untestable.py", line 69, in write_file
+    with open(file_name, 'w') as writer:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.3/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1118, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.3/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1122, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.3/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1177, in _execute_mock_call
+    raise effect
+OSError: Something bad happened!
+</pre>
+
+<p>
+This a wonderful thing. We've told python, simulate an exception. Simulate the unforeseen issues that can arise. Maybe the disk runs out of memory. Maybe this is all happening in the cloud, and our disk phsyically fails. These things can and do happen.
+</p>
+
+<p>
+So, we'll write some code to improve our FileWriter. For example, say we want to output a log message, and end execution:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">writes to files, and handles exceptions more gracefully.</span>
+<span style="color: #4f97d7; font-weight: bold;">class</span> <span style="color: #ce537a; font-weight: bold;">FileWriter</span><span style="color: #4f97d7;">()</span>:
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">__init__</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span><span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">pass</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">write_file</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span>, file_name, contents<span style="color: #4f97d7;">)</span>:
+
+        <span style="color: #4f97d7; font-weight: bold;">try</span>:
+            <span style="color: #4f97d7; font-weight: bold;">with</span> <span style="color: #4f97d7;">open</span><span style="color: #4f97d7;">(</span>file_name, <span style="color: #2d9574;">'w'</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> writer:
+                <span style="color: #4f97d7; font-weight: bold;">for</span> line <span style="color: #4f97d7; font-weight: bold;">in</span> contents:
+                    writer.write<span style="color: #4f97d7;">(</span>line + <span style="color: #2d9574;">'\n'</span><span style="color: #4f97d7;">)</span>
+        <span style="color: #4f97d7; font-weight: bold;">except</span> <span style="color: #ce537a; font-weight: bold;">IOError</span> <span style="color: #4f97d7; font-weight: bold;">as</span> <span style="color: #7590db;">ex</span>:
+            <span style="color: #4f97d7;">print</span><span style="color: #4f97d7;">(</span>f<span style="color: #2d9574;">"An error has occured while writing </span>{file_name}<span style="color: #2d9574;">"</span><span style="color: #4f97d7;">)</span>
+            <span style="color: #4f97d7; font-weight: bold;">return</span>
+
+<span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">unit test with exception raised!</span>
+<span style="color: #4f97d7; font-weight: bold;">from</span> unittest.mock <span style="color: #4f97d7; font-weight: bold;">import</span> patch, mock_open
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_file_writer_fails</span><span style="color: #4f97d7;">(</span>file_writer<span style="color: #4f97d7;">)</span>:
+    open_mock = mock_open<span style="color: #4f97d7;">()</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">with</span> patch<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"__main__.open"</span>, open_mock, create=<span style="color: #a45bad;">True</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> open_mock:
+        open_mock.side_effect = <span style="color: #ce537a; font-weight: bold;">IOError</span><span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"Something bad happened!"</span><span style="color: #4f97d7;">)</span>
+        file_writer.write_file<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/test.txt"</span>, <span style="color: #bc6ec5;">[</span><span style="color: #2d9574;">"my-data"</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span>
+
+    open_mock.assert_called_once_with<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/test.txt"</span>, <span style="color: #2d9574;">"w"</span><span style="color: #4f97d7;">)</span>
+    open_mock.return_value.write.assert_not_called<span style="color: #4f97d7;">()</span>
+
+test_file_writer_fails<span style="color: #4f97d7;">(</span>FileWriter<span style="color: #bc6ec5;">()</span><span style="color: #4f97d7;">)</span>
+
+</pre>
+</div>
+
+
+<p>
+Now we're in some serious business &#x2013; dare I say, we've encountered some <i>best practices</i>. <i><b>Robust</b></i> practices. Do you need to do this in your personal project? Probably not. But in productionalized code for a big company? Ace.
 </p>
 </div>
 </div>
@@ -324,11 +434,11 @@ In the above unit tests, we are using a mock to patch a function. In this case, 
 <h3 id="orgc2f0bd2"><span class="section-number-3">2.3.</span> Additional powers of abstraction</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
-In each of these cases, our CustomerRepository, CustomerService, and FileWriter, we're abstracting away the details. The main function is dependent on these external classes, but it's agnostic toward the implementation details. For example, the main() function doesn't care what happens inside the CustomerRepository, main just cares that it gets data back in the format it requires. It doesn't care what format the CustomerService prints customers in, just that it returns a list of strings.
+In each of these cases, CustomerRepository, CustomerService, and FileWriter, we're abstracting away the details. The main function is dependent of these external classes, but it's agnostic toward the implementation details. For example, the main() function doesn't care what happens inside the CustomerRepository, main just cares that it gets data back in the format it requires. It doesn't care what format the CustomerService prints customers in, just that it returns a list of strings.
 </p>
 
 <p>
-This leads to some powerful capabilities, namely in the customization of code. For example, what if the CustomerRepository was no longer stored in memory, but instead became a database. Well, there would be no changes to main. As long as the database driver implements a CustomerRepository, containing the function get<sub>customers</sub>, it can be anything it wants to be. It can ready from a file, it can fetch from an API&#x2026; main doesn't care. Main will work all the same.
+This leads to some powerful capabilities, namely in the customization of code. For example, what if the CustomerRepository was no longer stored in memory, but instead became a database? Well, there would be no changes to main. As long as the database driver implements a CustomerRepository, containing the function <code>get_customers</code>, it can be anything it wants to be. It can read from a file, it can fetch from an API&#x2026; main doesn't care. Main will work all the same.
 </p>
 
 <p>
@@ -336,18 +446,70 @@ In much the same way any CD can be inserted into a disc drive, any CustomerRepos
 </p>
 
 <p>
-This is subsequently where mocks can and will come back into play. Let's say CustomerRepository turns into a full-fledged cloud-provided database. In unit tests, we no longer want to make the actual database call. So, we'll pass in a Mock for those aspects of the call to get<sub>customers</sub>, much the same way we did with <code>open</code>. 
+This is subsequently where mocks can and will come back into play. Let's say CustomerRepository does turn into a full-fledged cloud-provided database. In unit tests, we no longer want to make the actual database call. So, we'll pass in a Mock for those aspects of the call to <code>get_customers</code>, much the same way we did with <code>open</code>. 
+</p>
+
+<p>
+Unit Testing our <code>~main()~</code> function is also necessary. In this case, it's just going to be a series of mocks however. Remember: we test isolated slices. The unit test for main should not leave main. You might say, "but that's not testing anything at all!" and you'd be right &#x2013; it's really not in this case. In it's current state, main cares only about contracts. That is to say, it needs data in a very specific format, and it needs to stay in that format even as say, files turn into databases. More on contract testing later.
 </p>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org890c184" class="outline-2">
-<h2 id="org890c184"><span class="section-number-2">3.</span> User Acceptance Tests</h2>
+
+<div id="outline-container-orgc424bf0" class="outline-2">
+<h2 id="orgc424bf0"><span class="section-number-2">3.</span> Component Testing</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+So far, we've kept our code in a vacuum intentionally. At this point, we're confident that the code itself is working, and we've even enhanced a few components. We've parallelized the work among engineering teams, they've implemented their components, and now we're putting the pieces together. Component testing will validate that the components we've built work when combined.
+</p>
+
+<p>
+In Component Testing, our boundaries of execution expand a bit. Contract testing entails testing the code from end-to-end, but not to the extent of leaving the machine. What I mean by that is, we'll execute main, without mocking the <i>internal</i> dependencies (CustomerRepository, CustomerService, FileWriter). We won't mock the file writer either&#x2013;we should get some output in a file. However, I would still recommend that we mock any dependencies that leave our machine. For example, if we were calling a database or an API, that should stay mocked. If the file needs to be transered to S3 for example&#x2026; don't do that.  Our boundaries are expanding, but only somewhat.
+</p>
+
+<p>
+There are several reasons for this. Component testing is about satisfying requirements. This is where we demonstrate to product, "look, this application does everything you asked." To accomplish this, we need to test edge cases. We need data that looks normal and we need data that looks funny. We need odd characters that might trip us up (god forbid someone has a comma in their name&#x2026;). We need some control over the scenarios we test against, so that product trusts the application is code-complete.
+</p>
+
+<p>
+The mocks for our downstreams also become more complex here. We may for example mock network timeouts at this stage, and validate the response of the entire application in the result of that timeout. We may mock a 404 error here, and again, validate the behavior of the entire application is as expected.
+</p>
+
+<p>
+To make this testing more repeatable and reliable, we don't hit the database or any APIs. There's also a cost / etiquette implication here. Imagine that database or API is owned by a separate team. They don't want your QA traffic hammering their DB everytime your junior engineer tries to push a new feature into the development environment. You're spending too much money testing something which isn't fully tested yet.
+</p>
 </div>
+</div>
+
+
+
 <div id="outline-container-org85a6344" class="outline-2">
 <h2 id="org85a6344"><span class="section-number-2">4.</span> Contract Testing</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Contract testing is at a similiar level to Component Testing / User Acceptance Testing. Again, we're right up against the boundaries of our application code: the final response object of an API for example, or the HTTP Request we're sending down stream (ie, we're satisfying the downstream partner's contract too).
+</p>
+
+<p>
+These tests ensure that those plug-in points are working. There's a number of platforms out there to enable this, but perhaps simplest is to ensure that your component tests mock the downstream dependencies, but have specific assertions that fully capture the contact-points are working.
+</p>
+
+<p>
+New ways of testing contracts are becoming available, as major companies move to micro-serice architectures. 
+</p>
 </div>
+</div>
+
 <div id="outline-container-orgbb89c54" class="outline-2">
 <h2 id="orgbb89c54"><span class="section-number-2">5.</span> Integration Tests</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+These are the real deal tests. Now, we can start hitting our downstream dependencies, finally. It's time to let them know to expect some traffic.
+</p>
+
+<p>
+These tests are fewer in number. We mainly are concerned that we actually can communicate with the outside world. This is NOT the time to validate edge cases. We've already done that. 
+</p>
+</div>
 </div>

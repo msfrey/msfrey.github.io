@@ -65,9 +65,14 @@ class FileWriter():
         pass
 
     def write_file(self, file_name, contents):
-        with open(file_name, 'w') as writer:
-            for line in contents:
-                writer.write(line + '\n')
+
+        try:
+            with open(file_name, 'w') as writer:
+                for line in contents:
+                    writer.write(line + '\n')
+        except IOError as ex:
+            print(f"An error has occured while writing {file_name}")
+            return
 
 def main(customer_repository, customer_service, file_writer):
     customers = customer_repository.get_customers()
@@ -116,8 +121,7 @@ test_customer_service_record_format(CustomerService())
 
 from unittest.mock import patch, mock_open
 
-def test_file_writer():
-    file_writer = FileWriter()
+def test_file_writer(file_writer):
     open_mock = mock_open()
 
     with patch("__main__.open", open_mock, create=True):
@@ -126,7 +130,20 @@ def test_file_writer():
     open_mock.assert_called_once_with("../output/test.txt", "w")
     open_mock.return_value.write.assert_called_once_with("my-data\n")
 
-test_file_writer()
 
+test_file_writer(FileWriter())
 
+from unittest.mock import patch, mock_open
+
+def test_file_writer_fails(file_writer):
+    open_mock = mock_open()
+
+    with patch("__main__.open", open_mock, create=True) as open_mock:
+        open_mock.side_effect = IOError("Something bad happened!")
+        file_writer.write_file("../output/test.txt", ["my-data"])
+
+    open_mock.assert_called_once_with("../output/test.txt", "w")
+    open_mock.return_value.write.assert_not_called()
+
+test_file_writer_fails(FileWriter())
 
