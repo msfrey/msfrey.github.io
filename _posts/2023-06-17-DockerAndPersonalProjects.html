@@ -7,27 +7,27 @@ subtitle: How to enable sustainable, successful projects with containers
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org597f17f">1. Docker in 2 Minutes</a>
+<li><a href="#orga68374a">1. Docker in 2 Minutes</a>
 <ul>
-<li><a href="#orge9c5a8c">1.1. What is?</a></li>
-<li><a href="#org20bb047">1.2. Why do we use it?</a></li>
+<li><a href="#orgd39f835">1.1. What is?</a></li>
+<li><a href="#org830a8eb">1.2. Why do we use it?</a></li>
 </ul>
 </li>
-<li><a href="#orga4c9dbd">2. Tutorial: Docker for personal projects</a>
+<li><a href="#orgb415602">2. Tutorial: Docker for personal projects</a>
 <ul>
-<li><a href="#org9d43c3b">2.1. Language: CPP</a></li>
+<li><a href="#org2631c10">2.1. Language: CPP</a></li>
 </ul>
 </li>
-<li><a href="#org505752e">3. Common Commands and Documentation</a></li>
+<li><a href="#org27d3313">3. Common Commands and Documentation</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org597f17f" class="outline-2">
-<h2 id="org597f17f"><span class="section-number-2">1.</span> Docker in 2 Minutes</h2>
+<div id="outline-container-orga68374a" class="outline-2">
+<h2 id="orga68374a"><span class="section-number-2">1.</span> Docker in 2 Minutes</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-orge9c5a8c" class="outline-3">
-<h3 id="orge9c5a8c"><span class="section-number-3">1.1.</span> What is?</h3>
+<div id="outline-container-orgd39f835" class="outline-3">
+<h3 id="orgd39f835"><span class="section-number-3">1.1.</span> What is?</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Docker solves the problem of telling your stakeholder "Well, it worked on my machine." after the software you delivered fails epicly. It does this by providing "containers" for your code, similiar to a virtual machine or virtual environment. The container is isolated from the machine it runs on, and includes everything required to allow an application to run, including it's own Operating System. The container can therefore be packaged up and deployed with minimal compatibility issues.
@@ -35,8 +35,8 @@ Docker solves the problem of telling your stakeholder "Well, it worked on my mac
 </div>
 </div>
 
-<div id="outline-container-org20bb047" class="outline-3">
-<h3 id="org20bb047"><span class="section-number-3">1.2.</span> Why do we use it?</h3>
+<div id="outline-container-org830a8eb" class="outline-3">
+<h3 id="org830a8eb"><span class="section-number-3">1.2.</span> Why do we use it?</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Because of the isolated environment, your workflow is simplified. No more issues around running multiple versions of the same dependency, no more shipping code only to discover the destination code is built on a different OS. No more forgetting your commands to compile and run your code after leaving it untouched for months. It's all baked in. The entire lifecycle is simplified by containers, all the way through to production deployment.
@@ -45,8 +45,8 @@ Because of the isolated environment, your workflow is simplified. No more issues
 </div>
 </div>
 
-<div id="outline-container-orga4c9dbd" class="outline-2">
-<h2 id="orga4c9dbd"><span class="section-number-2">2.</span> Tutorial: Docker for personal projects</h2>
+<div id="outline-container-orgb415602" class="outline-2">
+<h2 id="orgb415602"><span class="section-number-2">2.</span> Tutorial: Docker for personal projects</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Something funny happened when I wrote this blog post. I dusted off an old containerized application to put my money where my mouth is. It's an application I haven't touched in about 6 months, and frankly have no idea where I left off. The premise was simple: make millions with a high-frequency trading bot, and learn C++ at the same time. I ended up writing a few interesting abstractions on HTTP Requests to fetch the current price of cryptocurrencies from <a href="https://www.alphavantage.co/">AlphaVantage</a>.
@@ -84,8 +84,8 @@ Let's see how in the next section.
 </p>
 </div>
 
-<div id="outline-container-org9d43c3b" class="outline-3">
-<h3 id="org9d43c3b"><span class="section-number-3">2.1.</span> Language: CPP</h3>
+<div id="outline-container-org2631c10" class="outline-3">
+<h3 id="org2631c10"><span class="section-number-3">2.1.</span> Language: CPP</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 Some key vocabulary up front. Docker Images vs Docker Containers. We build images, and run containers.
@@ -195,8 +195,8 @@ These are the favors you can do yourself that save you time and will enable you 
 </div>
 
 
-<div id="outline-container-org505752e" class="outline-2">
-<h2 id="org505752e"><span class="section-number-2">3.</span> Common Commands and Documentation</h2>
+<div id="outline-container-org27d3313" class="outline-2">
+<h2 id="org27d3313"><span class="section-number-2">3.</span> Common Commands and Documentation</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 <a href="https://docs.docker.com/engine/reference/builder/">Dockerfile documentation</a>
