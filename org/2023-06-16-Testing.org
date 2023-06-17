@@ -1,0 +1,236 @@
+#+OPTIONS: toc:nil
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Testing 
+subtitle: How to deliver code that works
+---
+#+END_EXPORT
+#+TOC: headlines 2
+* Testing
+The single most important thing when delivering code is that it works. Testing is the process by which we prove that it works.
+
+In the early stages of my career, I tested manually. I executed whatever process I was building in a test environment, and validated the outputs. I spun up web pages, and started clicking buttons. I monitored the goings-on between front-end and back-end with the Chrome Developer tools, and occasionally took a gander at my creations in Internet Explorer (the only browser which ran our universities ERP software. I'm not joking). Eventually, I would become satisfied, or my manager would become so dissastified with my pace of delivery, that I'd call it done. The business units I wrote software for would validate too.
+
+I've since learned to think of testing as a pyramid. At the base of the pyramid are Unit Tests. These test small chunks of code in isolated slices.
+
+These small chunks of code combine and amount to an application, which must fulfill certain requirements. We validate those requirements at the next level of the pyramid, with User Acceptance Tests. These tests aren't as isolated -- we let our code run end-to-end -- but we don't call any downstream services in the process. We stay in a vacuum, and test only the things which we can control.
+
+Next are Contract Tests -- tests which validate that our code adheres to the contract defined in our documentation, and the contracts of the downstream services we consume. These ensure that our contact-points -- the areas which form the "boundaries" of our application -- are valid. This means testing the shape of the overall response of our application, and the requests which we send downwstream. Still, we don't call those downstream services, and we don't get called by any one upstream.
+
+Finally at the tip of the pyramid are the integration tests. Tests which validate the entire system works from end to end. If we've done robust testing up until this point, these tests will be few in number, but will test critical paths.
+
+With all of these bases covered, as engineers we should not stress over whether or not our code is ready (unless of course we wrote lazy usless tests to save time). At that point we do just need to ship our code.
+
+* Unit Tests and Codebase Architecture
+Unit Testing is an un-sung hero of software engineering. I've seen very few jr engineers get it right. Most codebases I've encountered are filled with lazily written do-nothing tests which dumbly satisfy code-coverage software. The best code bases are about 50:50, with a number of key tests which hold the ship together. I, as someone who learned about unit tests two years ago, will prove their value, and how to write them well. This is how I manage to sleep at night.
+
+** Isolated Slices
+The key thing to understand is that Unit Tests are intended to test isolated slices of code. They should test a single function, and the test should not ever leave that funcion. This is harder than it sounds. Writing good code means writing code that is intentionally written to be easy to test, and that takes some experience.
+
+Take for example this code:
+
+#+BEGIN_SRC python
+CUSTOMERS_DB = [
+    {"name": "Jennifer Love Hewitt", "age": 55},
+    {"name": "Anthony Hopkins", "age": 34},
+    {"name": "Martin Godzilla", "age": 67},
+    {"name": "Tony Jabroney", "age": 21}
+]
+
+def create_customer_over_50_file():
+    customers = CUSTOMERS_DB
+
+    with open('../output/customers_over_50_report.txt', 'w') as writer:
+        customers_over_50 = list(filter((lambda customer: customer['age'] > 50), customers))
+
+        for customer in customers_over_50:
+            writer.write(f'{customer["name"]}, { customer["age"]}\n')
+
+create_customer_over_50_file()
+#+END_SRC
+
+This code accomplishes a fairly common set of tasks:
+- Reads data from some data source
+- Filters that data based on a business requirement.
+- Writes it to an output destination
+
+Regardless of whether or not you're connecting to a database, reading from an API, or streaming that data into a DLQ, the general principles remain. We access data, transform it, and output it.
+
+The above is nicely written. Generally, whomever wrote this function could feel pretty confident that it does what they want based on reading it. For many years, I wrote code just like this, and I would test it by manually reading the output data, and calling it done. Customer over 50 report is ready for prod, boss.
+
+But now comes a new requirement: we must achieve over 80% of the lines of code covered by a unit test in order to ship it.
+
+No problem, you think. We could run this function, and then write another function to validate. Job done, with the following code:
+
+#+BEGIN_SRC python
+import os
+
+def validate_customer_over_50_file_exists():
+    path = '../output/customers_over_50_report.txt'
+    assert os.path.isfile(path), "Path should exist"
+
+def validate_customer_over_50_file():
+    with open('../output/customers_over_50_report.txt', 'r') as reader:
+        line = reader.readline()
+        while line != '':
+            record = line.split(',')
+            record = [v.strip() for v in record]
+            assert int(record[1]) > 50, "Customer should be over 50"
+
+            line=reader.readline()
+
+validate_customer_over_50_file_exists()
+validate_customer_over_50_file()
+#+END_SRC
+
+In some contexts, I'd see the above and would think... just ship it. It's not awful. It has asserts which make sense at least. In my time at the university, this already exceeds any automated test I'd ever written (none).
+
+But alas, at major software engineering organizations, this doesn't really fly.
+
+Here's where it starts to break down for me:
+- Separation of Responsibility / Concerns
+  It's hard to detect in this short snippet, but recall there's 3 separate operations going on. There's the input, the business logic, and the output. They're all mixed together. Any of the 3 can evolve at any time. There's times when from a computer architecture perspective, we're leaving the main execution, and we're waiting on I/O processes to complete.
+- Maintainability
+  Requirements change. One day, you're reading data from an in-memory source, but the next you're fetching it from a microservice. One day, it's customers over 50, the next, it's customers between the ages of 25 and 55 in California. One day, you're writing it to a flat file, but the next you're sending it to an API. In some cases, 100% of this code would be re-written.
+  - Reusability
+    What if we need a second report. Much of the requirements are the same, but this time we're writing products to a CSV, and filtering by price. In the current design of this code, we would write a second, completely separate but eerily similiar function. And it would need all it's own unit tests.
+
+You get the idea. It's not bad code, it's just not particularly /good/ code either.
+
+So what do we do? We refactor and abstract. This is where unit tests in some ways begin to drive our codebase architecture. When we develop code with unit tests in mind, the code is better organized, more reusable, and easier to maintain. My first boss at my new company once said, "Programming gets fun when you stop coding and start engineering". My eyes rolled all the way back into my head when he said that, but he was right.
+
+** Refactoring for organization, maintainenace, and resuability
+Recall that we are doing 3 primary things: fetching data, transforming it, and outputing it. These will form the basis for our refactor.
+
+So, we'll write 3 classes which specialize in these areas. The first will be the CustomerRepository. It's sole purpose will be to surface customer data. The second will be the CustomerService, which is our business logic. This is where we'll implement what HR says they need -- for example, the filter for the customer age, and the string output format they require. Lastly, we'll write a FileWriter, whose sole job is to write data to files.
+
+It is like follows:
+
+#+BEGIN_SRC python
+# refactoring our code
+
+# stores and returns data
+class CustomerRepository:
+    def __init__(self):
+        pass
+
+    def get_customers(self):
+        return [
+            {"name": "Jennifer Love Hewitt", "age": 55},
+            {"name": "Anthony Hopkins", "age": 34},
+            {"name": "Martin Godzilla", "age": 67},
+            {"name": "Tony Jabroney", "age": 21}
+        ]
+
+# data interactions
+class CustomerService:
+    def __init__(self):
+        pass
+
+    def filter_customers(self, customers):
+        return list(filter((lambda customer: customer['age'] > 50), customers))
+
+    def get_customer_record_format(self, customer):
+        return f'{customer["name"]}, { customer["age"]}\n'
+
+# writes to files
+class FileWriter():
+    def __init__(self):
+        pass
+
+    def write_file(self, file_name, contents):
+        with open(file_name, 'w') as writer:
+            for line in contents:
+                writer.write(line)
+
+def main(customer_repository, customer_service, file_writer):
+    customers = customer_repository.get_customers()
+    customers_over_50 = customer_service.filter_customers(customers)
+    formatted_customers_over_50 = [customer_service.get_customer_record_format(customer) for customer in customers_over_50]
+    file_writer.write_file("../output/customers_over_50_report.txt", formatted_customers_over_50)
+
+main(CustomerRepository(), CustomerService(), FileWriter())
+validate_customer_over_50_file_exists()
+validate_customer_over_50_file()
+#+END_SRC 
+
+... and we can even re-use our old unit tests to check our work!
+
+This is a lot more code. We've effectively split the original code into its component parts. But each part is now reusable, easier to maintain, and easier to test. Let's take a look at those unit tests:
+
+#+BEGIN_SRC python
+def test_customer_repository(customer_repository):
+    customers = customer_repository.get_customers()
+
+    for customer in customers:
+        assert customer["name"] != None and customer["age"] != None
+
+
+def test_customer_service_filter(customer_service):
+    customers = [
+        {"name": "Jennifer Love Hewitt", "age": 55},
+        {"name": "Anthony Hopkins", "age": 34},
+    ]
+
+    filtered_customers = customer_service.filter_customers(customers)
+
+    assert len(filtered_customers) == 1
+
+    for customer in filtered_customers:
+        assert customer["age"] > 50
+
+
+def test_customer_service_record_format(customer_service):
+    customers = {"name": "Jennifer Love Hewitt", "age": 55}
+
+    formatted_customer = customer_service.get_customer_record_format(customers)
+
+    assert formatted_customer == "Jennifer Love Hewitt, 55", f"Should be like a CSV, but instead is {formatted_customer}"
+
+
+test_customer_repository(CustomerRepository())
+test_customer_service_filter(CustomerService())
+test_customer_service_record_format(CustomerService())
+#+END_SRC
+
+Each component is now tested separately. Each test is simple. The components are isolated. The unit tests test only one function at a time. But you may ask: where is the unit test for the FileWriter?
+
+Here's the difficulty with the FileWriter. The FileWriter leaves our code. It necessarily engages in some sort of File I/O that takes palce separately from the exceution of our application. In unit tests, we have a rule: we don't leave the function we're testing.
+
+To avoid this in unit tests, we use mocks. Mocking can be done in any language, but in python we commonly use ~unittest.mock~. Instead of opening a real file, we'll use ~mock_open~ and open a Mock file. Then we'll validate that our code does that correctly, and writes to that mock correctly -- but we won't actually write a file.
+
+Isn't that bad? Not really -- at that point, it's executing code we didn't write. If an issue is found at that point, we'll open an Issue with the Python language folks. Here's what it looks like:
+
+#+BEGIN_SRC python
+from unittest.mock import patch, mock_open
+
+def test_file_writer():
+    file_writer = FileWriter()
+    open_mock = mock_open()
+
+    with patch("__main__.open", open_mock, create=True):
+        file_writer.write_file("../output/test.txt", ["my-data"])
+
+    open_mock.assert_called_once_with("../output/test.txt", "w")
+    open_mock.return_value.write.assert_called_once_with("my-data\n")
+
+test_file_writer()
+#+END_SRC
+
+In the above unit tests, we are using a mock to patch a function. In this case, we patch the ~open~ function with a new variable, ~open_mock~. This tells python, instead of calling ~open~ and creating a file, call our ~open_mock~ object instead. This is also how we build our asserts, since Python is monitoring the uses of ~open_mock~. We can therefore assert that it's called exactly once, and that we call it with ~my-data\n~, thereby enforcing our contract.
+
+** Additional powers of abstraction
+In each of these cases, our CustomerRepository, CustomerService, and FileWriter, we're abstracting away the details. The main function is dependent on these external classes, but it's agnostic toward the implementation details. For example, the main() function doesn't care what happens inside the CustomerRepository, main just cares that it gets data back in the format it requires. It doesn't care what format the CustomerService prints customers in, just that it returns a list of strings.
+
+This leads to some powerful capabilities, namely in the customization of code. For example, what if the CustomerRepository was no longer stored in memory, but instead became a database. Well, there would be no changes to main. As long as the database driver implements a CustomerRepository, containing the function get_customers, it can be anything it wants to be. It can ready from a file, it can fetch from an API... main doesn't care. Main will work all the same.
+
+In much the same way any CD can be inserted into a disc drive, any CustomerRepository can be inserted into main.
+
+This is subsequently where mocks can and will come back into play. Let's say CustomerRepository turns into a full-fledged cloud-provided database. In unit tests, we no longer want to make the actual database call. So, we'll pass in a Mock for those aspects of the call to get_customers, much the same way we did with ~open~. 
+
+* User Acceptance Tests
+* Contract Testing
+* Integration Tests
+
+

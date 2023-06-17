@@ -1,0 +1,353 @@
+---
+layout: default
+title: Testing 
+subtitle: How to deliver code that works
+---
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orge5e7f1d">1. Testing</a></li>
+<li><a href="#org27b6f7c">2. Unit Tests and Codebase Architecture</a>
+<ul>
+<li><a href="#org70084d7">2.1. Isolated Slices</a></li>
+<li><a href="#org20ec363">2.2. Refactoring for organization, maintainenace, and resuability</a></li>
+<li><a href="#orgc2f0bd2">2.3. Additional powers of abstraction</a></li>
+</ul>
+</li>
+<li><a href="#org890c184">3. User Acceptance Tests</a></li>
+<li><a href="#org85a6344">4. Contract Testing</a></li>
+<li><a href="#orgbb89c54">5. Integration Tests</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orge5e7f1d" class="outline-2">
+<h2 id="orge5e7f1d"><span class="section-number-2">1.</span> Testing</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+The single most important thing when delivering code is that it works. Testing is the process by which we prove that it works.
+</p>
+
+<p>
+In the early stages of my career, I tested manually. I executed whatever process I was building in a test environment, and validated the outputs. I spun up web pages, and started clicking buttons. I monitored the goings-on between front-end and back-end with the Chrome Developer tools, and occasionally took a gander at my creations in Internet Explorer (the only browser which ran our universities ERP software. I'm not joking). Eventually, I would become satisfied, or my manager would become so dissastified with my pace of delivery, that I'd call it done. The business units I wrote software for would validate too.
+</p>
+
+<p>
+I've since learned to think of testing as a pyramid. At the base of the pyramid are Unit Tests. These test small chunks of code in isolated slices.
+</p>
+
+<p>
+These small chunks of code combine and amount to an application, which must fulfill certain requirements. We validate those requirements at the next level of the pyramid, with User Acceptance Tests. These tests aren't as isolated &#x2013; we let our code run end-to-end &#x2013; but we don't call any downstream services in the process. We stay in a vacuum, and test only the things which we can control.
+</p>
+
+<p>
+Next are Contract Tests &#x2013; tests which validate that our code adheres to the contract defined in our documentation, and the contracts of the downstream services we consume. These ensure that our contact-points &#x2013; the areas which form the "boundaries" of our application &#x2013; are valid. This means testing the shape of the overall response of our application, and the requests which we send downwstream. Still, we don't call those downstream services, and we don't get called by any one upstream.
+</p>
+
+<p>
+Finally at the tip of the pyramid are the integration tests. Tests which validate the entire system works from end to end. If we've done robust testing up until this point, these tests will be few in number, but will test critical paths.
+</p>
+
+<p>
+With all of these bases covered, as engineers we should not stress over whether or not our code is ready (unless of course we wrote lazy usless tests to save time). At that point we do just need to ship our code.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org27b6f7c" class="outline-2">
+<h2 id="org27b6f7c"><span class="section-number-2">2.</span> Unit Tests and Codebase Architecture</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Unit Testing is an un-sung hero of software engineering. I've seen very few jr engineers get it right. Most codebases I've encountered are filled with lazily written do-nothing tests which dumbly satisfy code-coverage software. The best code bases are about 50:50, with a number of key tests which hold the ship together. I, as someone who learned about unit tests two years ago, will prove their value, and how to write them well. This is how I manage to sleep at night.
+</p>
+</div>
+
+<div id="outline-container-org70084d7" class="outline-3">
+<h3 id="org70084d7"><span class="section-number-3">2.1.</span> Isolated Slices</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+The key thing to understand is that Unit Tests are intended to test isolated slices of code. They should test a single function, and the test should not ever leave that funcion. This is harder than it sounds. Writing good code means writing code that is intentionally written to be easy to test, and that takes some experience.
+</p>
+
+<p>
+Take for example this code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #7590db;">CUSTOMERS_DB</span> = <span style="color: #4f97d7;">[</span>
+    <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Jennifer Love Hewitt"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">55</span><span style="color: #bc6ec5;">}</span>,
+    <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Anthony Hopkins"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">34</span><span style="color: #bc6ec5;">}</span>,
+    <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Martin Godzilla"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">67</span><span style="color: #bc6ec5;">}</span>,
+    <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Tony Jabroney"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">21</span><span style="color: #bc6ec5;">}</span>
+<span style="color: #4f97d7;">]</span>
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">create_customer_over_50_file</span><span style="color: #4f97d7;">()</span>:
+    <span style="color: #7590db;">customers</span> = CUSTOMERS_DB
+
+    <span style="color: #4f97d7; font-weight: bold;">with</span> <span style="color: #4f97d7;">open</span><span style="color: #4f97d7;">(</span><span style="color: #2d9574;">'../output/customers_over_50_report.txt'</span>, <span style="color: #2d9574;">'w'</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> <span style="color: #7590db;">writer</span>:
+        customers_over_50 = <span style="color: #4f97d7;">list</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">filter</span><span style="color: #bc6ec5;">(</span><span style="color: #2d9574;">(</span><span style="color: #4f97d7; font-weight: bold;">lambda</span> customer: customer<span style="color: #67b11d;">[</span><span style="color: #2d9574;">'age'</span><span style="color: #67b11d;">]</span> &gt; <span style="color: #a45bad;">50</span><span style="color: #2d9574;">)</span>, customers<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+
+        <span style="color: #4f97d7; font-weight: bold;">for</span> customer <span style="color: #4f97d7; font-weight: bold;">in</span> customers_over_50:
+            writer.write<span style="color: #4f97d7;">(</span>f<span style="color: #2d9574;">'</span>{customer["name"]}<span style="color: #2d9574;">, </span>{ customer["age"]}<span style="color: #2d9574;">\n'</span><span style="color: #4f97d7;">)</span>
+
+create_customer_over_50_file<span style="color: #4f97d7;">()</span>
+</pre>
+</div>
+
+<p>
+This code accomplishes a fairly common set of tasks:
+</p>
+<ul class="org-ul">
+<li>Reads data from some data source</li>
+<li>Filters that data based on a business requirement.</li>
+<li>Writes it to an output destination</li>
+</ul>
+
+<p>
+Regardless of whether or not you're connecting to a database, reading from an API, or streaming that data into a DLQ, the general principles remain. We access data, transform it, and output it.
+</p>
+
+<p>
+The above is nicely written. Generally, whomever wrote this function could feel pretty confident that it does what they want based on reading it. For many years, I wrote code just like this, and I would test it by manually reading the output data, and calling it done. Customer over 50 report is ready for prod, boss.
+</p>
+
+<p>
+But now comes a new requirement: we must achieve over 80% of the lines of code covered by a unit test in order to ship it.
+</p>
+
+<p>
+No problem, you think. We could run this function, and then write another function to validate. Job done, with the following code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #4f97d7; font-weight: bold;">import</span> os
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">validate_customer_over_50_file_exists</span><span style="color: #4f97d7;">()</span>:
+    <span style="color: #7590db;">path</span> = <span style="color: #2d9574;">'../output/customers_over_50_report.txt'</span>
+    <span style="color: #4f97d7; font-weight: bold;">assert</span> os.path.isfile<span style="color: #4f97d7;">(</span>path<span style="color: #4f97d7;">)</span>, <span style="color: #2d9574;">"Path should exist"</span>
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">validate_customer_over_50_file</span><span style="color: #4f97d7;">()</span>:
+    <span style="color: #4f97d7; font-weight: bold;">with</span> <span style="color: #4f97d7;">open</span><span style="color: #4f97d7;">(</span><span style="color: #2d9574;">'../output/customers_over_50_report.txt'</span>, <span style="color: #2d9574;">'r'</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> <span style="color: #7590db;">reader</span>:
+        line = reader.readline<span style="color: #4f97d7;">()</span>
+        <span style="color: #4f97d7; font-weight: bold;">while</span> line != <span style="color: #2d9574;">''</span>:
+            <span style="color: #7590db;">record</span> = line.split<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">','</span><span style="color: #4f97d7;">)</span>
+            <span style="color: #7590db;">record</span> = <span style="color: #4f97d7;">[</span>v.strip<span style="color: #bc6ec5;">()</span> <span style="color: #4f97d7; font-weight: bold;">for</span> v <span style="color: #4f97d7; font-weight: bold;">in</span> record<span style="color: #4f97d7;">]</span>
+            <span style="color: #4f97d7; font-weight: bold;">assert</span> <span style="color: #4f97d7;">int</span><span style="color: #4f97d7;">(</span>record<span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">1</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span> &gt; <span style="color: #a45bad;">50</span>, <span style="color: #2d9574;">"Customer should be over 50"</span>
+
+            <span style="color: #7590db;">line</span>=reader.readline<span style="color: #4f97d7;">()</span>
+
+validate_customer_over_50_file_exists<span style="color: #4f97d7;">()</span>
+validate_customer_over_50_file<span style="color: #4f97d7;">()</span>
+</pre>
+</div>
+
+<p>
+In some contexts, I'd see the above and would think&#x2026; just ship it. It's not awful. It has asserts which make sense at least. In my time at the university, this already exceeds any automated test I'd ever written (none).
+</p>
+
+<p>
+But alas, at major software engineering organizations, this doesn't really fly.
+</p>
+
+<p>
+Here's where it starts to break down for me:
+</p>
+<ul class="org-ul">
+<li>Separation of Responsibility / Concerns
+It's hard to detect in this short snippet, but recall there's 3 separate operations going on. There's the input, the business logic, and the output. They're all mixed together. Any of the 3 can evolve at any time. There's times when from a computer architecture perspective, we're leaving the main execution, and we're waiting on I/O processes to complete.</li>
+<li>Maintainability
+Requirements change. One day, you're reading data from an in-memory source, but the next you're fetching it from a microservice. One day, it's customers over 50, the next, it's customers between the ages of 25 and 55 in California. One day, you're writing it to a flat file, but the next you're sending it to an API. In some cases, 100% of this code would be re-written.
+<ul class="org-ul">
+<li>Reusability
+What if we need a second report. Much of the requirements are the same, but this time we're writing products to a CSV, and filtering by price. In the current design of this code, we would write a second, completely separate but eerily similiar function. And it would need all it's own unit tests.</li>
+</ul></li>
+</ul>
+
+<p>
+You get the idea. It's not bad code, it's just not particularly <i>good</i> code either.
+</p>
+
+<p>
+So what do we do? We refactor and abstract. This is where unit tests in some ways begin to drive our codebase architecture. When we develop code with unit tests in mind, the code is better organized, more reusable, and easier to maintain. My first boss at my new company once said, "Programming gets fun when you stop coding and start engineering". My eyes rolled all the way back into my head when he said that, but he was right.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org20ec363" class="outline-3">
+<h3 id="org20ec363"><span class="section-number-3">2.2.</span> Refactoring for organization, maintainenace, and resuability</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Recall that we are doing 3 primary things: fetching data, transforming it, and outputing it. These will form the basis for our refactor.
+</p>
+
+<p>
+So, we'll write 3 classes which specialize in these areas. The first will be the CustomerRepository. It's sole purpose will be to surface customer data. The second will be the CustomerService, which is our business logic. This is where we'll implement what HR says they need &#x2013; for example, the filter for the customer age, and the string output format they require. Lastly, we'll write a FileWriter, whose sole job is to write data to files.
+</p>
+
+<p>
+It is like follows:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">refactoring our code</span>
+
+<span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">stores and returns data</span>
+<span style="color: #4f97d7; font-weight: bold;">class</span> <span style="color: #ce537a; font-weight: bold;">CustomerRepository</span>:
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">__init__</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span><span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">pass</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">get_customers</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span><span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">return</span> <span style="color: #4f97d7;">[</span>
+            <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Jennifer Love Hewitt"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">55</span><span style="color: #bc6ec5;">}</span>,
+            <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Anthony Hopkins"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">34</span><span style="color: #bc6ec5;">}</span>,
+            <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Martin Godzilla"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">67</span><span style="color: #bc6ec5;">}</span>,
+            <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Tony Jabroney"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">21</span><span style="color: #bc6ec5;">}</span>
+        <span style="color: #4f97d7;">]</span>
+
+<span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">data interactions</span>
+<span style="color: #4f97d7; font-weight: bold;">class</span> <span style="color: #ce537a; font-weight: bold;">CustomerService</span>:
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">__init__</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span><span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">pass</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">filter_customers</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span>, customers<span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">return</span> <span style="color: #4f97d7;">list</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">filter</span><span style="color: #bc6ec5;">(</span><span style="color: #2d9574;">(</span><span style="color: #4f97d7; font-weight: bold;">lambda</span> customer: customer<span style="color: #67b11d;">[</span><span style="color: #2d9574;">'age'</span><span style="color: #67b11d;">]</span> &gt; <span style="color: #a45bad;">50</span><span style="color: #2d9574;">)</span>, customers<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">get_customer_record_format</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span>, customer<span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">return</span> f<span style="color: #2d9574;">'</span>{customer["name"]}<span style="color: #2d9574;">, </span>{ customer["age"]}<span style="color: #2d9574;">\n'</span>
+
+<span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">writes to files</span>
+<span style="color: #4f97d7; font-weight: bold;">class</span> <span style="color: #ce537a; font-weight: bold;">FileWriter</span><span style="color: #4f97d7;">()</span>:
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">__init__</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span><span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">pass</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">write_file</span><span style="color: #4f97d7;">(</span><span style="color: #4f97d7; font-weight: bold;">self</span>, file_name, contents<span style="color: #4f97d7;">)</span>:
+        <span style="color: #4f97d7; font-weight: bold;">with</span> <span style="color: #4f97d7;">open</span><span style="color: #4f97d7;">(</span>file_name, <span style="color: #2d9574;">'w'</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">as</span> <span style="color: #7590db;">writer</span>:
+            <span style="color: #4f97d7; font-weight: bold;">for</span> line <span style="color: #4f97d7; font-weight: bold;">in</span> contents:
+                writer.write<span style="color: #4f97d7;">(</span>line<span style="color: #4f97d7;">)</span>
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">main</span><span style="color: #4f97d7;">(</span>customer_repository, customer_service, file_writer<span style="color: #4f97d7;">)</span>:
+    customers = customer_repository.get_customers<span style="color: #4f97d7;">()</span>
+    <span style="color: #7590db;">customers_over_50</span> = customer_service.filter_customers<span style="color: #4f97d7;">(</span>customers<span style="color: #4f97d7;">)</span>
+    <span style="color: #7590db;">formatted_customers_over_50</span> = <span style="color: #4f97d7;">[</span>customer_service.get_customer_record_format<span style="color: #bc6ec5;">(</span>customer<span style="color: #bc6ec5;">)</span> <span style="color: #4f97d7; font-weight: bold;">for</span> customer <span style="color: #4f97d7; font-weight: bold;">in</span> customers_over_50<span style="color: #4f97d7;">]</span>
+    file_writer.write_file<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/customers_over_50_report.txt"</span>, formatted_customers_over_50<span style="color: #4f97d7;">)</span>
+
+main<span style="color: #4f97d7;">(</span>CustomerRepository<span style="color: #bc6ec5;">()</span>, CustomerService<span style="color: #bc6ec5;">()</span>, FileWriter<span style="color: #bc6ec5;">()</span><span style="color: #4f97d7;">)</span>
+validate_customer_over_50_file_exists<span style="color: #4f97d7;">()</span>
+validate_customer_over_50_file<span style="color: #4f97d7;">()</span>
+</pre>
+</div>
+
+<p>
+&#x2026; and we can even re-use our old unit tests to check our work!
+</p>
+
+<p>
+This is a lot more code. We've effectively split the original code into its component parts. But each part is now reusable, easier to maintain, and easier to test. Let's take a look at those unit tests:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_customer_repository</span><span style="color: #4f97d7;">(</span>customer_repository<span style="color: #4f97d7;">)</span>:
+    <span style="color: #7590db;">customers</span> = customer_repository.get_customers<span style="color: #4f97d7;">()</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">for</span> customer <span style="color: #4f97d7; font-weight: bold;">in</span> <span style="color: #7590db;">customers</span>:
+        <span style="color: #4f97d7; font-weight: bold;">assert</span> customer<span style="color: #4f97d7;">[</span><span style="color: #2d9574;">"name"</span><span style="color: #4f97d7;">]</span> != <span style="color: #a45bad;">None</span> <span style="color: #4f97d7; font-weight: bold;">and</span> customer<span style="color: #4f97d7;">[</span><span style="color: #2d9574;">"age"</span><span style="color: #4f97d7;">]</span> != <span style="color: #a45bad;">None</span>
+
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_customer_service_filter</span><span style="color: #4f97d7;">(</span>customer_service<span style="color: #4f97d7;">)</span>:
+    <span style="color: #7590db;">customers</span> = <span style="color: #4f97d7;">[</span>
+        <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Jennifer Love Hewitt"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">55</span><span style="color: #bc6ec5;">}</span>,
+        <span style="color: #bc6ec5;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Anthony Hopkins"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">34</span><span style="color: #bc6ec5;">}</span>,
+    <span style="color: #4f97d7;">]</span>
+
+    <span style="color: #7590db;">filtered_customers</span> = customer_service.filter_customers<span style="color: #4f97d7;">(</span>customers<span style="color: #4f97d7;">)</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">assert</span> <span style="color: #4f97d7;">len</span><span style="color: #4f97d7;">(</span>filtered_customers<span style="color: #4f97d7;">)</span> == <span style="color: #a45bad;">1</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">for</span> customer <span style="color: #4f97d7; font-weight: bold;">in</span> filtered_customers:
+        <span style="color: #4f97d7; font-weight: bold;">assert</span> customer<span style="color: #4f97d7;">[</span><span style="color: #2d9574;">"age"</span><span style="color: #4f97d7;">]</span> &gt; <span style="color: #a45bad;">50</span>
+
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_customer_service_record_format</span><span style="color: #4f97d7;">(</span>customer_service<span style="color: #4f97d7;">)</span>:
+    <span style="color: #7590db;">customers</span> = <span style="color: #4f97d7;">{</span><span style="color: #2d9574;">"name"</span>: <span style="color: #2d9574;">"Jennifer Love Hewitt"</span>, <span style="color: #2d9574;">"age"</span>: <span style="color: #a45bad;">55</span><span style="color: #4f97d7;">}</span>
+
+    <span style="color: #7590db;">formatted_customer</span> = customer_service.get_customer_record_format<span style="color: #4f97d7;">(</span>customers<span style="color: #4f97d7;">)</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">assert</span> formatted_customer == <span style="color: #2d9574;">"Jennifer Love Hewitt, 55"</span>, f<span style="color: #2d9574;">"Should be like a CSV, but instead is </span>{formatted_customer}<span style="color: #2d9574;">"</span>
+
+
+test_customer_repository<span style="color: #4f97d7;">(</span>CustomerRepository<span style="color: #bc6ec5;">()</span><span style="color: #4f97d7;">)</span>
+test_customer_service_filter<span style="color: #4f97d7;">(</span>CustomerService<span style="color: #bc6ec5;">()</span><span style="color: #4f97d7;">)</span>
+test_customer_service_record_format<span style="color: #4f97d7;">(</span>CustomerService<span style="color: #bc6ec5;">()</span><span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+
+<p>
+Each component is now tested separately. Each test is simple. The components are isolated. The unit tests test only one function at a time. But you may ask: where is the unit test for the FileWriter?
+</p>
+
+<p>
+Here's the difficulty with the FileWriter. The FileWriter leaves our code. It necessarily engages in some sort of File I/O that takes palce separately from the exceution of our application. In unit tests, we have a rule: we don't leave the function we're testing.
+</p>
+
+<p>
+To avoid this in unit tests, we use mocks. Mocking can be done in any language, but in python we commonly use <code>unittest.mock</code>. Instead of opening a real file, we'll use <code>mock_open</code> and open a Mock file. Then we'll validate that our code does that correctly, and writes to that mock correctly &#x2013; but we won't actually write a file.
+</p>
+
+<p>
+Isn't that bad? Not really &#x2013; at that point, it's executing code we didn't write. If an issue is found at that point, we'll open an Issue with the Python language folks. Here's what it looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #4f97d7; font-weight: bold;">from</span> unittest.mock <span style="color: #4f97d7; font-weight: bold;">import</span> patch, mock_open
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">test_file_writer</span><span style="color: #4f97d7;">()</span>:
+    <span style="color: #7590db;">file_writer</span> = FileWriter<span style="color: #4f97d7;">()</span>
+    <span style="color: #7590db;">open_mock</span> = mock_open<span style="color: #4f97d7;">()</span>
+
+    <span style="color: #4f97d7; font-weight: bold;">with</span> patch<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"__main__.open"</span>, open_mock, create=<span style="color: #a45bad;">True</span><span style="color: #4f97d7;">)</span>:
+        file_writer.write_file<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/test.txt"</span>, <span style="color: #bc6ec5;">[</span><span style="color: #2d9574;">"my-data"</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span>
+
+    open_mock.assert_called_once_with<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"../output/test.txt"</span>, <span style="color: #2d9574;">"w"</span><span style="color: #4f97d7;">)</span>
+    open_mock.return_value.write.assert_called_once_with<span style="color: #4f97d7;">(</span><span style="color: #2d9574;">"my-data\n"</span><span style="color: #4f97d7;">)</span>
+
+test_file_writer<span style="color: #4f97d7;">()</span>
+</pre>
+</div>
+
+<p>
+In the above unit tests, we are using a mock to patch a function. In this case, we patch the <code>open</code> function with a new variable, <code>open_mock</code>. This tells python, instead of calling <code>open</code> and creating a file, call our <code>open_mock</code> object instead. This is also how we build our asserts, since Python is monitoring the uses of <code>open_mock</code>. We can therefore assert that it's called exactly once, and that we call it with <code>my-data\n</code>, thereby enforcing our contract.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc2f0bd2" class="outline-3">
+<h3 id="orgc2f0bd2"><span class="section-number-3">2.3.</span> Additional powers of abstraction</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+In each of these cases, our CustomerRepository, CustomerService, and FileWriter, we're abstracting away the details. The main function is dependent on these external classes, but it's agnostic toward the implementation details. For example, the main() function doesn't care what happens inside the CustomerRepository, main just cares that it gets data back in the format it requires. It doesn't care what format the CustomerService prints customers in, just that it returns a list of strings.
+</p>
+
+<p>
+This leads to some powerful capabilities, namely in the customization of code. For example, what if the CustomerRepository was no longer stored in memory, but instead became a database. Well, there would be no changes to main. As long as the database driver implements a CustomerRepository, containing the function get<sub>customers</sub>, it can be anything it wants to be. It can ready from a file, it can fetch from an API&#x2026; main doesn't care. Main will work all the same.
+</p>
+
+<p>
+In much the same way any CD can be inserted into a disc drive, any CustomerRepository can be inserted into main.
+</p>
+
+<p>
+This is subsequently where mocks can and will come back into play. Let's say CustomerRepository turns into a full-fledged cloud-provided database. In unit tests, we no longer want to make the actual database call. So, we'll pass in a Mock for those aspects of the call to get<sub>customers</sub>, much the same way we did with <code>open</code>. 
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org890c184" class="outline-2">
+<h2 id="org890c184"><span class="section-number-2">3.</span> User Acceptance Tests</h2>
+</div>
+<div id="outline-container-org85a6344" class="outline-2">
+<h2 id="org85a6344"><span class="section-number-2">4.</span> Contract Testing</h2>
+</div>
+<div id="outline-container-orgbb89c54" class="outline-2">
+<h2 id="orgbb89c54"><span class="section-number-2">5.</span> Integration Tests</h2>
+</div>
