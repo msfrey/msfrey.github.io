@@ -8,8 +8,12 @@ subtitle: Tips and tricks for troubleshooting magit, a spacemacs git porcelain
 #+END_EXPORT
 #+TOC: headlines 2
 
-* Magit Tips
-** Creating Branches
+* SpaceMacs tips
+
+This ones mainly for me! But if there's anyone out there confused by this error, enjoy.
+
+** Creating Branches in Magit
+
 An extremely annoying error while learning magit branch workflows is the following:
 
 #+BEGIN_SRC
