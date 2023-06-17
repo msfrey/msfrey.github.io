@@ -1,0 +1,205 @@
+---
+layout: default
+title: Improving Personal Projects with Docker
+subtitle: How to enable sustainable, successful projects with containers
+---
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orga68374a">1. Docker in 2 Minutes</a>
+<ul>
+<li><a href="#orgd39f835">1.1. What is?</a></li>
+<li><a href="#org830a8eb">1.2. Why do we use it?</a></li>
+</ul>
+</li>
+<li><a href="#orgb415602">2. Tutorial: Docker for personal projects</a>
+<ul>
+<li><a href="#org2631c10">2.1. Language: CPP</a></li>
+</ul>
+</li>
+<li><a href="#org27d3313">3. Common Commands and Documentation</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orga68374a" class="outline-2">
+<h2 id="orga68374a"><span class="section-number-2">1.</span> Docker in 2 Minutes</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-orgd39f835" class="outline-3">
+<h3 id="orgd39f835"><span class="section-number-3">1.1.</span> What is?</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Docker solves the problem of telling your stakeholder "Well, it worked on my machine." after the software you delivered fails epicly. It does this by providing "containers" for your code, similiar to a virtual machine or virtual environment. The container is isolated from the machine it runs on, and includes everything required to allow an application to run, including it's own Operating System. The container can therefore be packaged up and deployed with minimal compatibility issues.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org830a8eb" class="outline-3">
+<h3 id="org830a8eb"><span class="section-number-3">1.2.</span> Why do we use it?</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Because of the isolated environment, your workflow is simplified. No more issues around running multiple versions of the same dependency, no more shipping code only to discover the destination code is built on a different OS. No more forgetting your commands to compile and run your code after leaving it untouched for months. It's all baked in. The entire lifecycle is simplified by containers, all the way through to production deployment.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb415602" class="outline-2">
+<h2 id="orgb415602"><span class="section-number-2">2.</span> Tutorial: Docker for personal projects</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Something funny happened when I wrote this blog post. I dusted off an old containerized application to put my money where my mouth is. It's an application I haven't touched in about 6 months, and frankly have no idea where I left off. The premise was simple: make millions with a high-frequency trading bot, and learn C++ at the same time. I ended up writing a few interesting abstractions on HTTP Requests to fetch the current price of cryptocurrencies from <a href="https://www.alphavantage.co/">AlphaVantage</a>.
+</p>
+
+<p>
+Anyway, being the "Do Future You a Favor" engineer I am, I even wrote a little README for this moment:
+</p>
+
+<pre class="example">
+# From README.md:
+
+# HFT
+High Frequency Trading is the best way to make money.
+
+#Local Development
+
+# To build the docker container:
+docker build . -t cpp-build-base:0.1.0
+
+# profit:
+docker run --rm -it cpp-build-base:0.1.0
+</pre>
+
+<p>
+Unlike every other time I've gone back to a personal project (and abandoned it), this one worked. I built the container and ran it. The code even still works! It did take a LONG time for the container build, since the ubunto base image had some major updates, but look at that! My high-frequency-trading firm is already prioritizing security by keeping its base images up to date!
+</p>
+
+<p>
+I can't describe the number of times I've returned to a half-finished personal project and thought, I don't even know how to start it up and run it any more. Do yourself a favor, and leave it to Docker.
+</p>
+
+<p>
+Let's see how in the next section.
+</p>
+</div>
+
+<div id="outline-container-org2631c10" class="outline-3">
+<h3 id="org2631c10"><span class="section-number-3">2.1.</span> Language: CPP</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Some key vocabulary up front. Docker Images vs Docker Containers. We build images, and run containers.
+</p>
+
+<p>
+Images are built via <code>docker build</code>, and then they're run as containers with <code>docker run</code>. Building the image is like writing a recipe for a new computer. The image will contain an operating system first and foremost. Then we'll install any additional software we need, and copy our application on to "the computer". We finally tell Docker how to run the image. But the key is that, the image doesn't run yet. These recipes&#x2013;our completed images&#x2013;are what gets past around and makes this all so convenient.
+</p>
+
+<p>
+Docker run takes little know-how: fetch our image (they get uploaded to some repo when they're built), and execute it. Some may be long running, others may be short-lived (like my HFT).
+</p>
+
+<p>
+<code>docker build</code> is responsible for assembling our container. This is where we're going to spin up the isolated virtual environment that will run our code. We do this by writing a Dockerfile, and running the build command to follow the instructions therein. It's important to note that nothing will actually run at this time. The end result is that the image is built and uploaded to the cloud for future use.
+</p>
+
+<div class="org-src-container">
+<pre class="src src--n">FROM ubuntu:bionic
+
+RUN apt-get update &amp;&amp; \
+  apt-get install -y build-essential git cmake autoconf libtool pkg-config libcurl4-openssl-dev libjsoncpp-dev
+
+WORKDIR /src
+
+COPY CMakeLists.txt main.cpp ./
+
+RUN cmake . &amp;&amp; make
+
+CMD ["./HFT"]
+</pre>
+</div>
+
+<p>
+What's going on with this Dockerfile specifically? Let's dive in. The first line is our base image, <code>ubunto:bionic</code>. This means we have a clean linux OS running on our "machine". These can be edited, but generally, it's not going to have very much bloat on it.
+</p>
+
+<p>
+The next line is to bring our software up to date. apt-get update runs the security patches I mentioned by grabbing the latest versions of all those packages from the cloud, and installing them into our container.
+</p>
+
+<p>
+the <code>&amp;&amp; \ apt=get install -y...</code> command is for cpp specifically. This cmmand installs the libraries we need to run our code, just the way packages are installed on any other local machine.
+</p>
+
+<p>
+Next, we update the "working directory" of our container with <code>WORKDIR /src</code>. This is necessary for the commands which follow, so that those commands are carried out in the right place. In this case, we're telling Docker, the magic happens in /src.
+</p>
+
+<p>
+Then, we load our beautifully written code on to the container. Quite simply, we copy it from the local destination into the container. The destination is ./ &#x2013; the top level of our working directory.
+</p>
+
+<p>
+After that, we run a common cpp command to compile our project! We would do this same exact thing if we were building and running locally, too. In this case, we need to tell the container, compile my package! In this project, it's with a make file. Boy am I glad I didn't try to remember this! Like I said, I would never have been able to make this run again.
+</p>
+
+<p>
+In the last step of build time, we need to tell Docker what to do when this image is run as a container. In this case, when we've told Docker, execute the shell command, <code>./HFT</code> which like any old execution command.
+</p>
+
+<p>
+Now, we can run our image with <code>docker run --rm -it cpp-build-base:0.1.0</code>.
+</p>
+
+<p>
+Here's the output!
+</p>
+
+<pre class="example">
+maxfrey@Maxs-Mac-mini containerized % docker run --rm -it cpp-build-base:0.1.0
+https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&amp;from_currency=BTC&amp;to_currency=USD&amp;apikey=MBNOFOZHP0KT13HIhttps://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&amp;from_currency=BTC&amp;to_currency=USD&amp;apikey=MBNOFOZHP0KT13HI
+Got 439 bytes at write_callback
+Chunk Memory:
+{
+    "Realtime Currency Exchange Rate": {
+        "1. From_Currency Code": "BTC",
+        "2. From_Currency Name": "Bitcoin",
+        "3. To_Currency Code": "USD",
+        "4. To_Currency Name": "United States Dollar",
+        "5. Exchange Rate": "26500.99000000",
+        "6. Last Refreshed": "2023-06-17 19:13:01",
+        "7. Time Zone": "UTC",
+        "8. Bid Price": "26500.98000000",
+        "9. Ask Price": "26500.99000000"
+    }
+}
+From Currency: BTC
+To Currency: USD
+Exchange Rate: 26500.99000000
+</pre>
+
+
+<p>
+What did this just do? Well, it ran my program of course! It fetched the current price of Bitcoin in USD of course &#x2013; 6 months after I wrote this code and forgot everything I ever knew about cpp.
+</p>
+
+<p>
+That's why you should put in the effort to Dockerize your work, even if it's for personal use.
+</p>
+
+<p>
+These are the favors you can do yourself that save you time and will enable you to build lots of half-finished projects that at least you'll be able to run in the future. 
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org27d3313" class="outline-2">
+<h2 id="org27d3313"><span class="section-number-2">3.</span> Common Commands and Documentation</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+<a href="https://docs.docker.com/engine/reference/builder/">Dockerfile documentation</a>
+</p>
+</div>
+</div>
