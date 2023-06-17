@@ -2,13 +2,23 @@
 #+BEGIN_EXPORT html
 ---
 layout: default
-title: Improving Personal Projects with Docker
-subtitle: How to enable sustainable, successful projects with containers
+title: How to use Docker for personal projects
+subtitle: Using docker containers to improve local software development
 ---
 #+END_EXPORT
 #+TOC: headlines 2
+
+* Why You Need Docker in Your Personal Projects
+If you're anything like me, your computer is filled with dozens of personal projects in varying states of disrepair.
+
+I have no idea how to even run them, let alone compile them. I don't know what state they're in and I can't remember how to use the language they're written. Their library dependencies have been overwritten or removed -- or were never on my current machine to begin with.
+
+Using Docker as the starting point for your personal applications will make it easier for you to return to them later. And, if your application turns into something real, you've already got the benefits of containerized, deploying applications built in. Lastly, if you ever upgrade machines, having your personal work in containers means zero-setup-required on the new machine (except downloading Docker).
+
+Incorporating Docker early and often can enable your workflows to increase long term efficiency, and it's a great skill to bring to a future employer.
+
 * Docker in 2 Minutes
-** What is?
+** What is Docker?
 Docker solves the problem of telling your stakeholder "Well, it worked on my machine." after the software you delivered fails epicly. It does this by providing "containers" for your code, similiar to a virtual machine or virtual environment. The container is isolated from the machine it runs on, and includes everything required to allow an application to run, including it's own Operating System. The container can therefore be packaged up and deployed with minimal compatibility issues.
 
 ** Why do we use it?
