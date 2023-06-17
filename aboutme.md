@@ -14,6 +14,6 @@ In the 10 years that have followed, I've learned a lot about implementing softwa
 
 In year 5 of my career, I started learning how to write robust code. Code that was testable, reusable, and maintainable. I don't want to call this _good_ code (I have many thoughts about the illusize _best practices_ we all want), but I'll say -- it's code that is worthy of productionalization at a heavily regulated financial institution.
 
-This blog exists to help me solidy and store my learnings on what it is I've learned. It'll have tips and tricks some of which may even approach _best practices_. I hope you enjoy it and learn something too.
+This blog exists to help me solidify and disseminate my learnings as an engineer and consultant. It'll have tips and tricks some of which may even approach _best practices_. I hope you enjoy it and learn something too.
 
-Please, never hesitate to reach out to me with questions, suggestions, and to tell me I'm wrong. This is information I'm spreading like wildfire, so if you think there's an area to improve, I'm all ears. Just be nice about it, we're all here because we love to learn and share ideas.
+Please, never hesitate to reach out to me with questions, suggestions, and to tell me I'm wrong. I'm spreading this information like wildfire, so if you think there's an area to improve, you're doing the community a disservice by not telling me. Just be nice about it, we're all here because we love to learn and share ideas.
