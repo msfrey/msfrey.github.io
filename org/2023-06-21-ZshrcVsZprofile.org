@@ -1,0 +1,21 @@
+#+OPTIONS: toc:nil
+#+BEGIN_EXPORT html
+---
+layout: default
+title: What's the difference between .zprofile and .zshrc
+subtitle: And why should you use .zprofile or .zshrc?
+---
+#+END_EXPORT
+#+TOC: headlines 2
+* ~/.zshrc vs ~/.zprofile
+If you're anything like me, you've had a healthy fear of .zshrc and .zprofile since the first time a random tutorial had you making changes to these files. Both of these files are used on mac computers to configure zsh. Officially, they're scripts that run at various points, and apply global configurations to your zsh environment.
+
+Either of these files could be used to customize $PATH variables, or export global variables (ie, export SPARK_SHELL=<path_to_spark>). ~conda~ notably modifies these files to run a (base) conda environment on start-up.
+
+Officially, the difference is this:
+- *~/.zshrc* configures the shell environment, and is run *everytime the shell is opened, on open*
+- *~/.zprofile* also configures the shell environment, but is only run *on mac startup*
+
+This leads to some important distinctions, but it's important to know that it /generally/ doesn't matter too much which file is updated. When in doubt... you can update both!
+
+You'll have to think for yourself where a certain config might belong, but ask yourself: can this run one time and be done with? Put that in .zprofile. Does the script need to be run / reset more often? Put it in .zshrc.

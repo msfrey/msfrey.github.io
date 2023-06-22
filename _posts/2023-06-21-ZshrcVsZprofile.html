@@ -1,0 +1,41 @@
+---
+layout: default
+title: What's the difference between .zprofile and .zshrc
+subtitle: And why should you use .zprofile or .zshrc?
+---
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org95e1e0b">1. ~/.zshrc vs ~/.zprofile</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org95e1e0b" class="outline-2">
+<h2 id="org95e1e0b"><span class="section-number-2">1.</span> ~/.zshrc vs ~/.zprofile</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+If you're anything like me, you've had a healthy fear of .zshrc and .zprofile since the first time a random tutorial had you making changes to these files. Both of these files are used on mac computers to configure zsh. Officially, they're scripts that run at various points, and apply global configurations to your zsh environment.
+</p>
+
+<p>
+Either of these files could be used to customize $PATH variables, or export global variables (ie, export SPARK<sub>SHELL</sub>=&lt;path<sub>to</sub><sub>spark</sub>&gt;). <code>conda</code> notably modifies these files to run a (base) conda environment on start-up.
+</p>
+
+<p>
+Officially, the difference is this:
+</p>
+<ul class="org-ul">
+<li><b>~/.zshrc</b> configures the shell environment, and is run <b>everytime the shell is opened, on open</b></li>
+<li><b>~/.zprofile</b> also configures the shell environment, but is only run <b>on mac startup</b></li>
+</ul>
+
+<p>
+This leads to some important distinctions, but it's important to know that it <i>generally</i> doesn't matter too much which file is updated. When in doubt&#x2026; you can update both!
+</p>
+
+<p>
+You'll have to think for yourself where a certain config might belong, but ask yourself: can this run one time and be done with? Put that in .zprofile. Does the script need to be run / reset more often? Put it in .zshrc
+</p>
+</div>
+</div>
